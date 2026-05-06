@@ -184,8 +184,6 @@ return [
         'dark' => 'images/logo-dark.png',
     ],
 
-    'roadmap_enabled' => env('ROADMAP_ENABLED', true),
-
     'recaptcha_enabled' => env('RECAPTCHA_ENABLED', false),
 
     'otp_login_enabled' => env('OTP_LOGIN_ENABLED', false),

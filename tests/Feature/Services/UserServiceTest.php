@@ -14,7 +14,7 @@ class UserServiceTest extends FeatureTest
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'public_name' => 'JohnD',
-            'phone_number' => '123456789',
+            'phone' => '123456789',
             'notes' => 'Some notes',
         ]);
 
@@ -33,7 +33,7 @@ class UserServiceTest extends FeatureTest
         $this->assertEquals("Anonymized User {$user->id}", $user->name);
         $this->assertEquals("anonymized_{$user->id}@example.com", $user->email);
         $this->assertEquals("Anonymized User {$user->id}", $user->public_name);
-        $this->assertNull($user->phone_number);
+        $this->assertNull($user->phone);
         $this->assertNull($user->email_verified_at);
         $this->assertNull($user->phone_number_verified_at);
         $this->assertEquals('Some notes', $user->notes); // Should remain as is

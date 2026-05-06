@@ -1,0 +1,81 @@
+<div class="space-y-5">
+    <div>
+        <h2 class="text-lg font-semibold text-gray-900">{{ __('Tell us about your business') }}</h2>
+        <p class="text-sm text-gray-500 mt-1">{{ __('This is what your customers will see when they find you.') }}</p>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Business name') }} *</label>
+        <input type="text" wire:model="businessName"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+               placeholder="e.g. Bella's Hair Studio">
+        @error('businessName') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Category') }} *</label>
+        <select wire:model.live="categoryId"
+                wire:change="loadServiceTemplatesForCategory"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+            <option value="">{{ __('Select a category') }}</option>
+            @foreach ($categories->groupBy('vertical') as $vertical => $items)
+                <optgroup label="{{ ucfirst(str_replace('_', ' ', $vertical)) }}">
+                    @foreach ($items as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                    @endforeach
+                </optgroup>
+            @endforeach
+        </select>
+        @error('categoryId') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Description') }}</label>
+        <textarea wire:model="description" rows="3"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="What makes your business special?"></textarea>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Phone') }}</label>
+            <input type="tel" wire:model="phone"
+                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                   placeholder="+1 555 123 4567">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Timezone') }} *</label>
+            <select wire:model="timezone"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                @foreach (['America/New_York','America/Chicago','America/Denver','America/Los_Angeles','America/Phoenix','America/Anchorage','Pacific/Honolulu','Europe/London','Europe/Paris','Asia/Dubai','Asia/Kolkata','Asia/Singapore','Australia/Sydney','UTC'] as $tz)
+                    <option value="{{ $tz }}">{{ $tz }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('Address') }}</label>
+        <input type="text" wire:model="addressLine1"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+               placeholder="Street address">
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('City') }}</label>
+            <input type="text" wire:model="city"
+                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('State') }}</label>
+            <input type="text" wire:model="state"
+                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('ZIP') }}</label>
+            <input type="text" wire:model="zipCode"
+                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+        </div>
+    </div>
+</div>

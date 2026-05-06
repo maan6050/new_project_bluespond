@@ -68,4 +68,9 @@ class Tenant extends Model
     {
         return $this->hasMany(Team::class);
     }
+
+    public function businessProfile(): HasOne
+    {
+        return $this->hasOne(BusinessProfile::class);
+    }
 }

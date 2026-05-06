@@ -40,9 +40,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         'public_name',
         'is_blocked',
         'notes',
-        'phone_number',
+        'phone',
         'phone_number_verified_at',
         'last_seen_at',
+        'user_type',
+        'avatar',
+        'notification_preferences',
     ];
 
     /**
@@ -65,17 +68,8 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         'phone_number_verified_at' => 'datetime',
         'password' => 'hashed',
         'last_seen_at' => 'datetime',
+        'notification_preferences' => 'array',
     ];
-
-    public function roadmapItems(): HasMany
-    {
-        return $this->hasMany(RoadmapItem::class);
-    }
-
-    public function roadmapItemUpvotes(): BelongsToMany
-    {
-        return $this->belongsToMany(RoadmapItem::class, 'roadmap_item_user_upvotes');
-    }
 
     public function userParameters(): HasMany
     {

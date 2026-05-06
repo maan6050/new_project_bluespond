@@ -63,6 +63,11 @@ class Plan extends Model
         return $this->belongsTo(PlanMeter::class);
     }
 
+    public function limits(): HasMany
+    {
+        return $this->hasMany(PlanLimit::class);
+    }
+
     protected static function booted(): void
     {
         static::updating(function (Plan $plan) {

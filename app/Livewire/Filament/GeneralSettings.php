@@ -64,7 +64,6 @@ class GeneralSettings extends Component implements HasForms
             'social_links_youtube' => $this->configService->get('app.social_links.youtube') ?? '',
             'social_links_github' => $this->configService->get('app.social_links.github') ?? '',
             'social_links_discord' => $this->configService->get('app.social_links.discord') ?? '',
-            'roadmap_enabled' => $this->configService->get('app.roadmap_enabled', true),
             'recaptcha_enabled' => $this->configService->get('app.recaptcha_enabled', false),
             'recaptcha_api_site_key' => $this->configService->get('recaptcha.api_site_key', ''),
             'recaptcha_api_secret_key' => $this->configService->get('recaptcha.api_secret_key', ''),
@@ -278,14 +277,6 @@ class GeneralSettings extends Component implements HasForms
                                 ->helperText(__('If enabled, customers will be able to see their transactions on the dashboard.'))
                                 ->required(),
                         ]),
-                    Tab::make(__('Roadmap'))
-                        ->icon('heroicon-o-bug-ant')
-                        ->schema([
-                            Toggle::make('roadmap_enabled')
-                                ->label(__('Roadmap Enabled'))
-                                ->helperText(__('If enabled, the roadmap will be visible to the public.'))
-                                ->required(),
-                        ]),
                     Tab::make(__('Authentication & Security'))
                         ->icon('heroicon-c-shield-check')
                         ->schema([
@@ -372,7 +363,6 @@ class GeneralSettings extends Component implements HasForms
         $this->configService->set('app.social_links.youtube', $data['social_links_youtube']);
         $this->configService->set('app.social_links.github', $data['social_links_github']);
         $this->configService->set('app.social_links.discord', $data['social_links_discord']);
-        $this->configService->set('app.roadmap_enabled', $data['roadmap_enabled']);
         $this->configService->set('app.recaptcha_enabled', $data['recaptcha_enabled']);
         $this->configService->set('recaptcha.api_site_key', $data['recaptcha_api_site_key']);
         $this->configService->set('recaptcha.api_secret_key', $data['recaptcha_api_secret_key']);

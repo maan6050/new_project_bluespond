@@ -96,10 +96,10 @@ class SubscriptionCheckoutController extends Controller
         $this->sessionService->resetSubscriptionCheckoutDto();
 
         if ($subscription && $subscription->type === SubscriptionType::LOCALLY_MANAGED) {
-            return view('checkout.local-subscription-thank-you');
+            return redirect()->route('onboarding');
         }
 
-        return view('checkout.subscription-thank-you');
+        return redirect()->route('onboarding');
     }
 
     public function convertLocalSubscriptionCheckoutSuccess()
