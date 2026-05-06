@@ -43,6 +43,7 @@ class BusinessProfile extends Model implements HasMedia
         'total_bookings',
         'vertical',
         'settings',
+        'setup_completed_at',
     ];
 
     protected $casts = [
@@ -54,6 +55,7 @@ class BusinessProfile extends Model implements HasMedia
         'total_reviews' => 'integer',
         'total_bookings' => 'integer',
         'settings' => 'array',
+        'setup_completed_at' => 'datetime',
     ];
 
     public function registerMediaCollections(): void

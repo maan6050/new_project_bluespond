@@ -80,13 +80,84 @@ class BusinessSetupWizard extends Component
         }
 
         $tenant = $this->resolveTenant();
-        if ($tenant && $tenant->businessProfile) {
+
+        if (! $tenant || ! $tenant->businessProfile) {
+            $this->initializeHours();
+
+            return;
+        }
+
+        $profile = $tenant->businessProfile;
+
+        if ($profile->setup_completed_at !== null) {
             $this->redirect(route('home'));
 
             return;
         }
 
-        $this->initializeHours();
+        $this->loadExistingDataFromProfile($profile);
+        $this->currentStep = $this->determineResumeStep($profile);
+    }
+
+    private function determineResumeStep(BusinessProfile $profile): int
+    {
+        $hasServices = Service::where('tenant_id', $profile->tenant_id)->exists();
+        $hasHours = BusinessHours::where('business_profile_id', $profile->id)->exists();
+
+        if (! $hasServices) {
+            return 2;
+        }
+
+        if (! $hasHours) {
+            return 3;
+        }
+
+        return 4;
+    }
+
+    private function loadExistingDataFromProfile(BusinessProfile $profile): void
+    {
+        $this->businessProfileId = $profile->id;
+        $this->businessName = $profile->business_name ?? '';
+        $this->categoryId = $profile->category_id;
+        $this->description = $profile->description ?? '';
+        $this->phone = $profile->phone ?? '';
+        $this->addressLine1 = $profile->address_line_1 ?? '';
+        $this->city = $profile->city ?? '';
+        $this->state = $profile->state ?? '';
+        $this->zipCode = $profile->zip_code ?? '';
+        $this->country = $profile->country ?? 'US';
+        $this->timezone = $profile->timezone ?? 'America/New_York';
+        $this->isPublished = $profile->is_published;
+
+        $services = Service::where('tenant_id', $profile->tenant_id)
+            ->orderBy('sort_order')
+            ->get();
+
+        if ($services->isNotEmpty()) {
+            $this->services = $services->map(fn (Service $s) => [
+                'name' => $s->name,
+                'duration_minutes' => $s->duration_minutes,
+                'price' => round($s->price / 100, 2),
+            ])->toArray();
+        }
+
+        $hours = BusinessHours::where('business_profile_id', $profile->id)
+            ->orderBy('day_of_week')
+            ->get();
+
+        if ($hours->isNotEmpty()) {
+            $dayNames = [0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'];
+            $this->hours = $hours->map(fn (BusinessHours $h) => [
+                'day_of_week' => $h->day_of_week,
+                'day_name' => $dayNames[$h->day_of_week],
+                'is_closed' => (bool) $h->is_closed,
+                'open_time' => $h->open_time,
+                'close_time' => $h->close_time,
+            ])->toArray();
+        } else {
+            $this->initializeHours();
+        }
     }
 
     public function render(): View
@@ -293,6 +364,7 @@ class BusinessSetupWizard extends Component
         }
 
         $profile->is_published = $this->isPublished;
+        $profile->setup_completed_at = now();
         $profile->save();
 
         $this->completed = true;
