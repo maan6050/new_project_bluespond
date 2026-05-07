@@ -35,7 +35,17 @@ Route::get('/', function () {
 })->name('home')->middleware('sitemapped');
 
 Route::get('/dashboard', function (UserDashboardService $dashboardService) {
-    return redirect($dashboardService->getUserDashboardUrl(Auth::user()));
+    $user = Auth::user();
+    $tenant = $user->tenants()->orderByDesc('tenants.id')->first();
+
+    if ($tenant) {
+        $profile = $tenant->businessProfile;
+        if (! $profile || $profile->setup_completed_at === null) {
+            return redirect()->route('onboarding');
+        }
+    }
+
+    return redirect($dashboardService->getUserDashboardUrl($user));
 })->name('dashboard')->middleware('auth');
 
 Auth::routes();
