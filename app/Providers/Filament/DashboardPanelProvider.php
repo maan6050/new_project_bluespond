@@ -7,8 +7,9 @@ use App\Constants\TenancyPermissionConstants;
 use App\Filament\Dashboard\Pages\CreateWorkspace;
 use App\Filament\Dashboard\Pages\TenantSettings;
 use App\Filament\Dashboard\Pages\TwoFactorAuth\TwoFactorAuth;
-use App\Http\Middleware\EnsureOnboardingCompleted;
 use App\Http\Middleware\UpdateUserLastSeenAt;
+use App\Models\BusinessHours;
+use App\Models\Service;
 use App\Livewire\AddressForm;
 use App\Models\Tenant;
 use App\Services\TenantPermissionService;
@@ -98,7 +99,6 @@ class DashboardPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 UpdateUserLastSeenAt::class,
-                EnsureOnboardingCompleted::class,
             ])
             ->renderHook('panels::head.start', function () {
                 return view('components.layouts.partials.analytics');
@@ -112,6 +112,10 @@ class DashboardPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::BODY_START,
                 fn (): string => Blade::render("@livewire('announcement.view', ['placement' => '".AnnouncementPlacement::USER_DASHBOARD->value."'])")
+            )
+            ->renderHook(
+                PanelsRenderHook::PAGE_START,
+                fn (): string => $this->renderOnboardingBanner()
             )
             ->authMiddleware([
                 Authenticate::class,
@@ -136,5 +140,36 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->tenantMenu()
             ->tenant(Tenant::class, 'uuid');
+    }
+
+    private function renderOnboardingBanner(): string
+    {
+        $tenant = Filament::getTenant();
+
+        if (! $tenant) {
+            return '';
+        }
+
+        $profile = $tenant->businessProfile;
+
+        if ($profile && $profile->setup_completed_at !== null) {
+            return '';
+        }
+
+        $currentStep = 1;
+        if ($profile) {
+            $hasServices = Service::where('tenant_id', $profile->tenant_id)->exists();
+            $hasHours = BusinessHours::where('business_profile_id', $profile->id)->exists();
+            $currentStep = match (true) {
+                ! $hasServices => 2,
+                ! $hasHours => 3,
+                default => 4,
+            };
+        }
+
+        return Blade::render(
+            '<x-onboarding-banner :current-step="$currentStep" />',
+            ['currentStep' => $currentStep]
+        );
     }
 }
