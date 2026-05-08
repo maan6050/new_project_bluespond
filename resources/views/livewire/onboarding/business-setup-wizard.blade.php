@@ -103,5 +103,12 @@
                 </button>
             </div>
         </div>
+
+        <p class="mt-6 text-center text-sm text-slate-500">
+            {{ __('Not ready right now?') }}
+            <a href="{{ route('dashboard') }}" class="font-medium text-blue-600 transition-colors hover:text-blue-700">
+                {{ __('Skip and finish later') }}
+            </a>
+        </p>
     @endif
 </div>
