@@ -15,10 +15,16 @@
                 <span class="text-xl font-bold text-primary-700">{{ config('app.name') }}</span>
                 <span class="text-sm text-gray-500">{{ __('Business setup') }}</span>
             </div>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-               class="text-sm text-gray-500 hover:text-gray-700">
-                {{ __('Sign out') }}
-            </a>
+            <div class="flex items-center gap-5">
+                <a href="{{ route('dashboard') }}"
+                   class="text-sm font-medium text-gray-600 hover:text-gray-900 hidden sm:inline">
+                    {{ __('Skip for now') }} &rarr;
+                </a>
+                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                   class="text-sm text-gray-500 hover:text-gray-700">
+                    {{ __('Sign out') }}
+                </a>
+            </div>
             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
         </div>
     </header>
