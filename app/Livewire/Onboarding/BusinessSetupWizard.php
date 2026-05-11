@@ -414,16 +414,7 @@ class BusinessSetupWizard extends Component
 
     private function generateUniqueSlug(string $name): string
     {
-        $base = Str::slug($name);
-        $slug = $base;
-        $counter = 1;
-
-        while (BusinessProfile::where('slug', $slug)->where('id', '!=', $this->businessProfileId ?? 0)->exists()) {
-            $slug = $base.'-'.$counter;
-            $counter++;
-        }
-
-        return $slug;
+        return BusinessProfile::generateUniqueSlug($name, $this->businessProfileId);
     }
 
     private function generateUniqueServiceSlug(int $tenantId, string $name, int $fallbackIndex): string

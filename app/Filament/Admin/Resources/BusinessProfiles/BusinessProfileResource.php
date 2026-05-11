@@ -8,13 +8,17 @@ use App\Filament\Admin\Resources\BusinessProfiles\Pages\EditBusinessProfile;
 use App\Filament\Admin\Resources\BusinessProfiles\Pages\ListBusinessProfiles;
 use App\Filament\Admin\Resources\BusinessProfiles\RelationManagers\BlockedDatesRelationManager;
 use App\Filament\Admin\Resources\BusinessProfiles\RelationManagers\HoursRelationManager;
+use App\Filament\Admin\Resources\BusinessProfiles\RelationManagers\ServicesRelationManager;
 use App\Filament\Admin\Resources\BusinessProfiles\RelationManagers\SocialLinksRelationManager;
+use App\Filament\Schemas\BusinessOwnerFields;
 use App\Models\BusinessCategory;
 use App\Models\BusinessProfile;
 use App\Models\Tenant;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -25,13 +29,15 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
 class BusinessProfileResource extends Resource
@@ -93,18 +99,10 @@ class BusinessProfileResource extends Resource
                         TextInput::make('slug')
                             ->label(__('Slug'))
                             ->helperText(__('Public URL slug. Leave empty to generate from name.'))
-                            ->dehydrateStateUsing(function ($state, Get $get) {
-                                if (empty($state)) {
-                                    $state = Str::slug($get('business_name'));
-                                    if (BusinessProfile::where('slug', $state)->exists()) {
-                                        $state .= '-'.Str::random(5);
-                                    }
-
-                                    return $state;
-                                }
-
-                                return Str::slug($state);
-                            })
+                            ->dehydrateStateUsing(fn ($state, Get $get, ?BusinessProfile $record) => empty($state)
+                                ? BusinessProfile::generateUniqueSlug($get('business_name'), $record?->id)
+                                : Str::slug($state)
+                            )
                             ->maxLength(255)
                             ->rules(['alpha_dash'])
                             ->unique(ignoreRecord: true),
@@ -132,10 +130,7 @@ class BusinessProfileResource extends Resource
                             ->tel()
                             ->maxLength(20),
 
-                        TextInput::make('email')
-                            ->label(__('Email'))
-                            ->email()
-                            ->maxLength(255),
+                        BusinessOwnerFields::ownerEmail(),
 
                         TextInput::make('address_line_1')
                             ->label(__('Address Line 1'))
@@ -221,7 +216,20 @@ class BusinessProfileResource extends Resource
                     ->components([
                         Toggle::make('is_published')
                             ->label(__('Published'))
-                            ->helperText(__('When on, the business is visible on the marketplace and accepts public bookings.'))
+                            ->helperText(function (?BusinessProfile $record): string {
+                                if (! $record || ! $record->exists) {
+                                    return __('Save the business first, then enable publishing once setup is complete.');
+                                }
+
+                                $blockers = $record->publishBlockers();
+
+                                if ($blockers === []) {
+                                    return __('When on, the business is visible on the marketplace and accepts public bookings.');
+                                }
+
+                                return '⚠ '.__('Cannot publish until you add: ').implode(', ', $blockers).'.';
+                            })
+                            ->disabled(fn (?BusinessProfile $record): bool => $record !== null && $record->exists && ! $record->canPublish())
                             ->default(false),
 
                         Toggle::make('is_featured')
@@ -271,7 +279,13 @@ class BusinessProfileResource extends Resource
                     ->toggleable(),
 
                 ToggleColumn::make('is_published')
-                    ->label(__('Published')),
+                    ->label(__('Published'))
+                    ->getStateUsing(fn (BusinessProfile $record): bool => $record->isLive())
+                    ->disabled(fn (BusinessProfile $record): bool => ! $record->isLive() && ! $record->canPublish())
+                    ->tooltip(fn (BusinessProfile $record): ?string => (! $record->canPublish())
+                        ? __('Cannot publish until you add: ').implode(', ', $record->publishBlockers())
+                        : null
+                    ),
 
                 ToggleColumn::make('is_featured')
                     ->label(__('Featured')),
@@ -310,21 +324,31 @@ class BusinessProfileResource extends Resource
                     ->label(__('Published')),
                 TernaryFilter::make('is_featured')
                     ->label(__('Featured')),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),
+                RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
     public static function getRelations(): array
     {
         return [
+            ServicesRelationManager::class,
             HoursRelationManager::class,
             BlockedDatesRelationManager::class,
             SocialLinksRelationManager::class,

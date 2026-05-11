@@ -10,6 +10,8 @@ use App\Models\BusinessCategory;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -20,7 +22,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
 class BusinessCategoryResource extends Resource
@@ -60,18 +65,10 @@ class BusinessCategoryResource extends Resource
                 TextInput::make('slug')
                     ->label(__('Slug'))
                     ->helperText(__('Leave empty to generate slug automatically from name.'))
-                    ->dehydrateStateUsing(function ($state, Get $get) {
-                        if (empty($state)) {
-                            $state = Str::slug($get('name'));
-                            if (BusinessCategory::where('slug', $state)->exists()) {
-                                $state .= '-'.Str::random(5);
-                            }
-
-                            return $state;
-                        }
-
-                        return Str::slug($state);
-                    })
+                    ->dehydrateStateUsing(fn ($state, Get $get, ?BusinessCategory $record) => empty($state)
+                        ? BusinessCategory::generateUniqueSlug($get('name'), $record?->id)
+                        : Str::slug($state)
+                    )
                     ->maxLength(100)
                     ->rules(['alpha_dash'])
                     ->unique(ignoreRecord: true),
@@ -163,16 +160,25 @@ class BusinessCategoryResource extends Resource
                     )->all()),
                 TernaryFilter::make('is_active')
                     ->label(__('Active')),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),
+                RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->defaultSort('sort_order');
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getRelations(): array

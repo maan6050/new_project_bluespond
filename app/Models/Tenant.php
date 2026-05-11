@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\SubscriptionService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -72,5 +73,10 @@ class Tenant extends Model
     public function businessProfile(): HasOne
     {
         return $this->hasOne(BusinessProfile::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

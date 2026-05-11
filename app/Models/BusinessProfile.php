@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUniqueSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class BusinessProfile extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia;
+    use HasFactory, HasUniqueSlug, InteractsWithMedia, SoftDeletes;
 
     public const MEDIA_LOGO = 'logo';
 
@@ -97,5 +98,64 @@ class BusinessProfile extends Model implements HasMedia
     public function services(): HasMany
     {
         return $this->hasMany(Service::class, 'tenant_id', 'tenant_id');
+    }
+
+    public function canPublish(): bool
+    {
+        return $this->publishBlockers() === [];
+    }
+
+    public function isLive(): bool
+    {
+        return ! $this->trashed() && $this->is_published && $this->canPublish();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function publishBlockers(): array
+    {
+        $reasons = [];
+
+        if (empty($this->business_name)) {
+            $reasons[] = __('business name');
+        }
+
+        if (empty($this->category_id)) {
+            $reasons[] = __('a selected category');
+        }
+
+        if (! $this->exists) {
+            $reasons[] = __('the business to be saved first');
+
+            return $reasons;
+        }
+
+        if ($this->services()->where('is_active', true)->doesntExist()) {
+            $reasons[] = __('at least one active service');
+        }
+
+        if ($this->hours()->where('is_closed', false)->doesntExist()) {
+            $reasons[] = __('at least one open day in business hours');
+        }
+
+        return $reasons;
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (BusinessProfile $profile): void {
+            if (! $profile->is_published) {
+                return;
+            }
+
+            if ($profile->canPublish()) {
+                return;
+            }
+
+            throw new \DomainException(
+                __('Cannot publish business. Missing: ').implode(', ', $profile->publishBlockers()).'.'
+            );
+        });
     }
 }

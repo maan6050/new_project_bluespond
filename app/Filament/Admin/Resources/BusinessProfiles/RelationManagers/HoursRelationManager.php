@@ -74,14 +74,18 @@ class HoursRelationManager extends RelationManager
                     ->placeholder('—'),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
+                DeleteAction::make()
+                    ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
             ])
             ->toolbarActions([
-                DeleteBulkAction::make(),
+                DeleteBulkAction::make()
+                    ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
             ])
             ->defaultSort('day_of_week')
             ->modelLabel(__('Business Hours'));

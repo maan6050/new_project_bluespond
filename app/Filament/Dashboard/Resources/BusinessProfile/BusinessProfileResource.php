@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\BusinessProfiles\RelationManagers\HoursRelation
 use App\Filament\Admin\Resources\BusinessProfiles\RelationManagers\SocialLinksRelationManager;
 use App\Filament\Dashboard\Resources\BusinessProfile\Pages\EditBusinessProfile;
 use App\Filament\Dashboard\Resources\BusinessProfile\Pages\ListBusinessProfile;
+use App\Filament\Schemas\BusinessOwnerFields;
 use App\Models\BusinessProfile;
 use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
@@ -19,7 +20,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -110,10 +110,7 @@ class BusinessProfileResource extends Resource
                             ->tel()
                             ->maxLength(20),
 
-                        TextInput::make('email')
-                            ->label(__('Email'))
-                            ->email()
-                            ->maxLength(255),
+                        BusinessOwnerFields::ownerEmail(),
 
                         TextInput::make('address_line_1')
                             ->label(__('Address Line 1'))
@@ -188,7 +185,20 @@ class BusinessProfileResource extends Resource
                     ->components([
                         Toggle::make('is_published')
                             ->label(__('Published'))
-                            ->helperText(__('When on, your business is visible to customers and accepts public bookings.'))
+                            ->helperText(function (?BusinessProfile $record): string {
+                                if (! $record || ! $record->exists) {
+                                    return __('Save your business first, then enable publishing once setup is complete.');
+                                }
+
+                                $blockers = $record->publishBlockers();
+
+                                if ($blockers === []) {
+                                    return __('When on, your business is visible to customers and accepts public bookings.');
+                                }
+
+                                return '⚠ '.__('Cannot publish until you add: ').implode(', ', $blockers).'.';
+                            })
+                            ->disabled(fn (?BusinessProfile $record): bool => $record !== null && $record->exists && ! $record->canPublish())
                             ->default(false),
                     ]),
             ]);
@@ -219,6 +229,7 @@ class BusinessProfileResource extends Resource
                 TextColumn::make('is_published')
                     ->label(__('Published'))
                     ->badge()
+                    ->state(fn (BusinessProfile $record): bool => $record->isLive())
                     ->formatStateUsing(fn (bool $state): string => $state ? __('Live') : __('Draft'))
                     ->color(fn (bool $state): string => $state ? 'success' : 'gray'),
             ])
