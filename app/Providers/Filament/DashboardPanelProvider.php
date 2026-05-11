@@ -8,9 +8,9 @@ use App\Filament\Dashboard\Pages\CreateWorkspace;
 use App\Filament\Dashboard\Pages\TenantSettings;
 use App\Filament\Dashboard\Pages\TwoFactorAuth\TwoFactorAuth;
 use App\Http\Middleware\UpdateUserLastSeenAt;
+use App\Livewire\AddressForm;
 use App\Models\BusinessHours;
 use App\Models\Service;
-use App\Livewire\AddressForm;
 use App\Models\Tenant;
 use App\Services\TenantPermissionService;
 use Filament\Actions\Action;
@@ -147,6 +147,12 @@ class DashboardPanelProvider extends PanelProvider
         $tenant = Filament::getTenant();
 
         if (! $tenant) {
+            return '';
+        }
+
+        // Platform admins administer the platform; they don't own a business —
+        // skip the onboarding nudge even when they're viewing a tenant context.
+        if (auth()->user()?->isAdmin()) {
             return '';
         }
 
