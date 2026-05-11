@@ -18,7 +18,7 @@
     <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
         <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
             <div class="flex items-center gap-3">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-900 text-white shadow-sm">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M12 2C12 2 5 9.5 5 15a7 7 0 0 0 14 0c0-5.5-7-13-7-13z"/>
                     </svg>

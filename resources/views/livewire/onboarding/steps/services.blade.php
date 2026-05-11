@@ -18,20 +18,20 @@
                 <div class="col-span-12 sm:col-span-5">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Service name') }}</label>
                     <input type="text" wire:model="services.{{ $index }}.name"
-                           class="block w-full rounded-lg border-slate-300 bg-white shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm"
+                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                            placeholder="e.g. Haircut">
                     @error("services.{$index}.name") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="col-span-6 sm:col-span-3">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Duration (min)') }}</label>
                     <input type="number" min="5" max="1440" step="5" wire:model="services.{{ $index }}.duration_minutes"
-                           class="block w-full rounded-lg border-slate-300 bg-white shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm">
+                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
                     @error("services.{$index}.duration_minutes") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="col-span-5 sm:col-span-3">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Price (USD)') }}</label>
                     <input type="number" min="0" step="0.01" wire:model="services.{{ $index }}.price"
-                           class="block w-full rounded-lg border-slate-300 bg-white shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm">
+                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
                     @error("services.{$index}.price") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="col-span-1 flex justify-end">
@@ -48,7 +48,7 @@
     </div>
 
     <button type="button" wire:click="addService"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-blue-300 bg-blue-50/40 px-4 py-2.5 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-400 hover:bg-blue-50">
+            class="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-teal-300 bg-teal-50/40 px-4 py-2.5 text-sm font-semibold text-teal-700 transition-colors hover:border-teal-400 hover:bg-teal-50">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
         </svg>

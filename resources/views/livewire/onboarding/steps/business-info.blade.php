@@ -5,18 +5,18 @@
     </div>
 
     <div>
-        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Business name') }} <span class="text-blue-600">*</span></label>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Business name') }} <span class="text-teal-600">*</span></label>
         <input type="text" wire:model="businessName"
-               class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm"
+               class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                placeholder="e.g. Bella's Hair Studio">
         @error('businessName') <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Category') }} <span class="text-blue-600">*</span></label>
+        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Category') }} <span class="text-teal-600">*</span></label>
         <select wire:model.live="categoryId"
                 wire:change="loadServiceTemplatesForCategory"
-                class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm">
+                class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
             <option value="">{{ __('Select a category') }}</option>
             @foreach ($categories->groupBy('vertical') as $vertical => $items)
                 <optgroup label="{{ ucfirst(str_replace('_', ' ', $vertical)) }}">
@@ -32,7 +32,7 @@
     <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Description') }}</label>
         <textarea wire:model="description" rows="3"
-                  class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm"
+                  class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                   placeholder="What makes your business special?"></textarea>
     </div>
 
@@ -40,13 +40,13 @@
         <div>
             <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Phone') }}</label>
             <input type="tel" wire:model="phone"
-                   class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm"
+                   class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                    placeholder="+1 555 123 4567">
         </div>
         <div>
-            <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Timezone') }} <span class="text-blue-600">*</span></label>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Timezone') }} <span class="text-teal-600">*</span></label>
             <select wire:model="timezone"
-                    class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm">
+                    class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
                 @foreach (['America/New_York','America/Chicago','America/Denver','America/Los_Angeles','America/Phoenix','America/Anchorage','Pacific/Honolulu','Europe/London','Europe/Paris','Asia/Dubai','Asia/Kolkata','Asia/Singapore','Australia/Sydney','UTC'] as $tz)
                     <option value="{{ $tz }}">{{ $tz }}</option>
                 @endforeach
@@ -57,7 +57,7 @@
     <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Address') }}</label>
         <input type="text" wire:model="addressLine1"
-               class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm"
+               class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                placeholder="Street address">
     </div>
 
@@ -65,17 +65,17 @@
         <div>
             <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('City') }}</label>
             <input type="text" wire:model="city"
-                   class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm">
+                   class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
         </div>
         <div>
             <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('State') }}</label>
             <input type="text" wire:model="state"
-                   class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm">
+                   class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
         </div>
         <div>
             <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('ZIP') }}</label>
             <input type="text" wire:model="zipCode"
-                   class="block w-full rounded-lg border-slate-300 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm">
+                   class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
         </div>
     </div>
 </div>

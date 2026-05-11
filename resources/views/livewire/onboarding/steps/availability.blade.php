@@ -13,7 +13,7 @@
                 <div class="col-span-3">
                     <label class="inline-flex cursor-pointer items-center text-sm text-slate-700">
                         <input type="checkbox" wire:model.live="hours.{{ $index }}.is_closed"
-                               class="rounded border-slate-300 text-blue-600 transition-colors focus:ring-2 focus:ring-blue-500/20">
+                               class="rounded border-slate-300 text-teal-600 transition-colors focus:ring-2 focus:ring-teal-500/20">
                         <span class="ml-2 font-medium">{{ __('Closed') }}</span>
                     </label>
                 </div>
@@ -21,13 +21,13 @@
                     <input type="time"
                            wire:model="hours.{{ $index }}.open_time"
                            @if ($h['is_closed']) disabled @endif
-                           class="block w-full rounded-lg border-slate-300 bg-white shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm disabled:bg-slate-100 disabled:text-slate-400">
+                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:bg-slate-100 disabled:text-slate-400">
                 </div>
                 <div class="col-span-3">
                     <input type="time"
                            wire:model="hours.{{ $index }}.close_time"
                            @if ($h['is_closed']) disabled @endif
-                           class="block w-full rounded-lg border-slate-300 bg-white shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm disabled:bg-slate-100 disabled:text-slate-400">
+                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 disabled:bg-slate-100 disabled:text-slate-400">
                 </div>
             </div>
         @endforeach

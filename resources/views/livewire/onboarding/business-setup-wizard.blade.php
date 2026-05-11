@@ -14,7 +14,7 @@
         <div class="mb-8">
             <div class="mb-6 flex items-end justify-between">
                 <div>
-                    <p class="text-sm font-medium text-blue-600">{{ __('Step :current of :total', ['current' => $currentStep, 'total' => $totalSteps]) }}</p>
+                    <p class="text-sm font-medium text-teal-600">{{ __('Step :current of :total', ['current' => $currentStep, 'total' => $totalSteps]) }}</p>
                     <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ __('Set up your business') }}</h1>
                 </div>
                 <span class="hidden text-sm font-semibold text-slate-500 sm:inline">
@@ -32,12 +32,12 @@
                     <li class="flex flex-col gap-2">
                         <span @class([
                             'block h-1.5 w-full rounded-full transition-colors duration-300',
-                            'bg-blue-600' => $isComplete || $isActive,
+                            'bg-teal-500' => $isComplete || $isActive,
                             'bg-slate-200' => $isUpcoming,
                         ])></span>
                         <span @class([
                             'flex items-center gap-1.5 text-xs font-medium tracking-wide',
-                            'text-blue-600' => $isComplete,
+                            'text-teal-600' => $isComplete,
                             'text-slate-900' => $isActive,
                             'text-slate-400' => $isUpcoming,
                         ])>
@@ -48,7 +48,7 @@
                             @else
                                 <span @class([
                                     'flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold',
-                                    'bg-blue-600 text-white' => $isActive,
+                                    'bg-teal-500 text-white' => $isActive,
                                     'bg-slate-200 text-slate-500' => $isUpcoming,
                                 ])>{{ $stepNumber }}</span>
                             @endif
@@ -86,14 +86,14 @@
                 <button type="button"
                         wire:click="nextStep"
                         wire:loading.attr="disabled"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-blue-600">
-                    <span wire:loading.remove wire:target="nextStep" class="inline-flex items-center gap-1.5">
+                        class="relative inline-flex min-w-45 items-center justify-center gap-1.5 rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-800 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-900/40 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:bg-blue-900">
+                    <span wire:loading.remove wire:target="nextStep" class="inline-flex items-center gap-1.5 whitespace-nowrap">
                         {{ $currentStep < $totalSteps ? __('Continue') : __('Finish & Publish') }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                         </svg>
                     </span>
-                    <span wire:loading wire:target="nextStep" class="inline-flex items-center gap-2">
+                    <span wire:loading.inline-flex wire:target="nextStep" class="items-center gap-2 whitespace-nowrap">
                         <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -106,7 +106,7 @@
 
         <p class="mt-6 text-center text-sm text-slate-500">
             {{ __('Not ready right now?') }}
-            <a href="{{ route('dashboard') }}" class="font-medium text-blue-600 transition-colors hover:text-blue-700">
+            <a href="{{ route('dashboard') }}" class="font-medium text-teal-600 transition-colors hover:text-teal-700">
                 {{ __('Skip and finish later') }}
             </a>
         </p>
