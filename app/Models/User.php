@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\TenancyPermissionConstants;
 use App\Notifications\Auth\QueuedVerifyEmail;
 use App\Services\OrderService;
 use App\Services\SubscriptionService;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Laragear\TwoFactor\Contracts\TwoFactorAuthenticatable;
 use Laragear\TwoFactor\TwoFactorAuthentication;
 use Laravel\Sanctum\HasApiTokens;
@@ -202,5 +204,37 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
     public function referralRewards(): HasMany
     {
         return $this->hasMany(ReferralReward::class, 'referrer_user_id');
+    }
+
+    /**
+     * Public URL for the user's avatar, resolved through the configured media disk.
+     * Returns null if no avatar is set. Works for any configured Storage disk —
+     * flipping config('filesystems.media_disk') swaps between local and S3.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        return Storage::disk(config('filesystems.media_disk'))->url($this->avatar);
+    }
+
+    /**
+     * Keep the Spatie 'admin' role in sync with the is_admin flag.
+     * This removes the need to expose the Spatie role picker in the admin form
+     * while preserving impersonation + admin-permission grants automatically.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (User $user): void {
+            $adminRole = TenancyPermissionConstants::ROLE_ADMIN;
+
+            if ($user->is_admin && ! $user->hasRole($adminRole)) {
+                $user->assignRole($adminRole);
+            } elseif (! $user->is_admin && $user->hasRole($adminRole)) {
+                $user->removeRole($adminRole);
+            }
+        });
     }
 }

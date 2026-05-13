@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Users;
 
+use App\Constants\UserType;
 use App\Filament\Admin\Resources\Users\Pages\CreateUser;
 use App\Filament\Admin\Resources\Users\Pages\EditUser;
 use App\Filament\Admin\Resources\Users\Pages\ListUsers;
@@ -12,6 +13,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -20,10 +22,12 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -52,6 +56,15 @@ class UserResource extends Resource
         return $schema
             ->components([
                 Section::make()->schema([
+                    FileUpload::make('avatar')
+                        ->label(__('Profile Image'))
+                        ->avatar()
+                        ->image()
+                        ->imageEditor()
+                        ->disk(config('filesystems.media_disk'))
+                        ->directory('avatars')
+                        ->maxSize(2048)
+                        ->helperText(__('JPG, PNG, or WebP. Max 2MB.')),
                     TextInput::make('name')
                         ->label(__('Name'))
                         ->required()
@@ -80,13 +93,15 @@ class UserResource extends Resource
                         ->nullable()
                         ->label(__('Notes'))
                         ->helperText('Any notes you want to keep about this user.'),
-                    Select::make('roles')
-                        ->multiple()
+                    Select::make('user_type')
                         ->label(__('Roles'))
-                        ->relationship('roles', 'name', modifyQueryUsing: function ($query) {
-                            return $query->where('is_tenant_role', false);
-                        })
-                        ->preload(),
+                        ->options(collect(UserType::cases())->mapWithKeys(
+                            fn (UserType $type) => [$type->value => Str::headline($type->value)]
+                        )->all())
+                        ->required()
+                        ->default(UserType::CUSTOMER->value)
+                        ->native(false)
+                        ->helperText(__('Admin = platform admin · Business Owner = creates and manages a business · Staff = invited by an owner · Customer = books appointments.')),
                     Checkbox::make('is_admin')
                         ->label('Is Admin?')
                         ->helperText('If checked, this user will be able to access the admin panel. There has to be at least 1 admin user, so if this field is disabled, you will have to create another admin user first before you can disable this one.')
@@ -106,12 +121,30 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('avatar')
+                    ->label('')
+                    ->disk(config('filesystems.media_disk'))
+                    ->circular()
+                    ->size(40),
                 TextColumn::make('name')
                     ->label(__('Name'))
                     ->searchable()->sortable(),
                 TextColumn::make('email')
                     ->label(__('Email'))
                     ->searchable()->sortable(),
+                TextColumn::make('user_type')
+                    ->label(__('Roles'))
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => $state ? Str::headline($state) : '—')
+                    ->color(fn (?string $state): string => match ($state) {
+                        UserType::ADMIN->value => 'warning',
+                        UserType::BUSINESS_OWNER->value => 'info',
+                        UserType::STAFF->value => 'success',
+                        UserType::CUSTOMER->value => 'gray',
+                        default => 'gray',
+                    })
+                    ->sortable()
+                    ->toggleable(),
                 IconColumn::make('email_verified_at')
                     ->label(__('Email Verified'))
                     ->getStateUsing(fn (User $user) => $user->email_verified_at ? true : false)

@@ -24,6 +24,13 @@ class TenantResource extends Resource
 {
     protected static ?string $model = Tenant::class;
 
+    /**
+     * Hidden from admin sidebar — Bluespond admins manage businesses via the
+     * "Businesses" resource, not raw tenants. Tenants remain accessible by
+     * direct URL (/admin/tenants/{id}/edit) for support and debugging.
+     */
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function getNavigationGroup(): ?string
     {
         return __('Tenancy');
