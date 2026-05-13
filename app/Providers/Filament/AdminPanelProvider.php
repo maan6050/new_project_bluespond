@@ -29,8 +29,17 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,   // Deep Blue #2563eb — primary CTAs, active states
+                'info' => Color::Sky,       // Sky Blue #38bdf8 — accent, info badges
+                'success' => Color::Teal,   // Teal #14b8a6 — secondary, success states
+                'gray' => Color::Slate,     // Slate — body text (#1e293b) and surfaces (#f8fafc / #f1f5f9)
             ])
+            ->font('Inter')
+            ->brandName('Bluespond')
+            ->brandLogo(asset('images/bluespond-logo.svg'))
+            ->darkModeBrandLogo(asset('images/bluespond-logo-light.svg'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('images/bluespond-icon.svg'))
             ->navigation()
             ->userMenuItems([
                 Action::make('user-dashboard')
@@ -43,7 +52,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
-            ->favicon(asset('images/favicon.ico'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->pages([
 

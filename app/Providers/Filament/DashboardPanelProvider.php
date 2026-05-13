@@ -43,8 +43,17 @@ class DashboardPanelProvider extends PanelProvider
             ->id('dashboard')
             ->path('dashboard')
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::Blue,   // Deep Blue #2563eb — primary CTAs, active states
+                'info' => Color::Sky,       // Sky Blue #38bdf8 — accent, info badges
+                'success' => Color::Teal,   // Teal #14b8a6 — secondary, success states
+                'gray' => Color::Slate,     // Slate — body text (#1e293b) and surfaces (#f8fafc / #f1f5f9)
             ])
+            ->font('Inter')
+            ->brandName('Bluespond')
+            ->brandLogo(asset('images/bluespond-logo.svg'))
+            ->darkModeBrandLogo(asset('images/bluespond-logo-light.svg'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('images/bluespond-icon.svg'))
             ->userMenuItems([
                 Action::make('admin-panel')
                     ->label(__('Admin Panel'))
@@ -82,7 +91,6 @@ class DashboardPanelProvider extends PanelProvider
                 Dashboard::class,
                 CreateWorkspace::class,
             ])
-            ->favicon(asset('images/favicon.ico'))
             ->viteTheme('resources/css/filament/dashboard/theme.css')
             ->discoverWidgets(in: app_path('Filament/Dashboard/Widgets'), for: 'App\\Filament\\Dashboard\\Widgets')
             ->widgets([

@@ -56,6 +56,34 @@ For every code change in this project:
 
 ---
 
+## Branding & Design Tokens (locked — use everywhere)
+
+Every UI surface in this project — admin panel, owner dashboard, customer portal, public booking pages, marketing site, email templates — uses the Bluespond palette. **Never substitute SaaSykit purple, Filament default Amber, or any color outside this table.**
+
+| Role | Hex | Tailwind | Where |
+| --- | --- | --- | --- |
+| Primary button / brand logo | `#1e3a8a` | `bg-blue-900` (hover `bg-blue-800`) | CTAs, header logo (deeper shade matches the Bluespond logo at button scale) |
+| Primary link / accent | `#2563eb` | `text-blue-600` | Links, focus borders, info accents |
+| Secondary / success | `#14b8a6` | `teal-500` (hover `teal-600`) | Step indicators, required asterisks, totals, success states |
+| Sky accent | `#38bdf8` | `sky-400` | Highlights, decorative |
+| Body text | `#1e293b` | `text-slate-800` | All body copy |
+| Heading text | `#0f172a` | `text-slate-900` | h1–h3 |
+| Muted text | — | `text-slate-500` | Helper text, captions |
+| Card surface | `#ffffff` | `bg-white` | Cards, form backgrounds |
+| Page background | `#f8fafc` | `bg-slate-50` | App / page background |
+| Subtle / disabled bg | `#f1f5f9` | `bg-slate-100` | Dividers, disabled fields |
+| Border | — | `border-slate-200` / `border-slate-300` | Default component borders |
+
+**Typography:** Inter (Google Fonts) — `font-family: 'Inter', system-ui, -apple-system, sans-serif;`. Weights 400, 500, 600, 700.
+
+**Aesthetic target:** Polished consumer app (think iPhone / Amazon checkout), not generic SaaS dashboard. Clean cards, generous whitespace, `rounded-lg` on form fields and `rounded-2xl` on cards, soft `shadow-sm` default.
+
+**Forbidden:** SaaSykit purple `#6f27e5`, Filament default Amber, pure black for primary buttons, ad-hoc colors not in this table.
+
+If a new token is genuinely needed, propose adding it here first — don't introduce one-off colors in component code.
+
+---
+
 ## 3. Laravel + SaaSyKit Conventions
 
 ### Where things live
