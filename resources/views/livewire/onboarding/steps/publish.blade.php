@@ -7,7 +7,7 @@
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
             <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Logo') }}</label>
-            <input type="file" wire:model="logo" accept="image/*"
+            <input type="file" wire:model="logo" accept="image/jpeg,image/png,image/webp,image/svg+xml"
                    class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-900 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-blue-800">
             <p class="mt-1.5 text-xs text-slate-500">{{ __('JPG, PNG, WebP, or SVG. Max 4MB.') }}</p>
             @error('logo') <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -22,7 +22,7 @@
         </div>
         <div>
             <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ __('Cover image') }}</label>
-            <input type="file" wire:model="coverImage" accept="image/*"
+            <input type="file" wire:model="coverImage" accept="image/jpeg,image/png,image/webp"
                    class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-900 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-blue-800">
             <p class="mt-1.5 text-xs text-slate-500">{{ __('JPG, PNG, or WebP. Max 8MB.') }}</p>
             @error('coverImage') <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p> @enderror

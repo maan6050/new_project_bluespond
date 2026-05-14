@@ -186,47 +186,76 @@ class InvoiceService
 
     private function addAddressInfo(Tenant $tenant, array $customFields): array
     {
-        $address = $tenant->address()->first();
+        $address = $this->resolveInvoiceAddress($tenant);
 
-        if (! $address) {
+        if ($address === null) {
             return $customFields;
         }
 
-        $addressPieces = [];
-
-        if (! empty($address->address_line_1)) {
-            $addressPieces[] = $address->address_line_1;
-        }
-
-        if (! empty($address->address_line_2)) {
-            $addressPieces[] = $address->address_line_2;
-        }
-
-        if (! empty($address->city)) {
-            $addressPieces[] = $address->city;
-        }
-
-        if (! empty($address->state)) {
-            $addressPieces[] = $address->state;
-        }
-
-        if (! empty($address->zip)) {
-            $addressPieces[] = $address->zip;
-        }
-
-        if (! empty($address->country_code)) {
-            $addressPieces[] = $this->countryResolver->resolveCountryFromCode($address->country_code);
-        }
+        $addressPieces = array_filter([
+            $address['line_1'] ?? null,
+            $address['line_2'] ?? null,
+            $address['city'] ?? null,
+            $address['state'] ?? null,
+            $address['zip'] ?? null,
+            ! empty($address['country_code'])
+                ? $this->countryResolver->resolveCountryFromCode($address['country_code'])
+                : null,
+        ]);
 
         if (count($addressPieces) > 0) {
             $customFields[__('address')] = implode(', ', $addressPieces);
         }
 
-        if (! empty($address->tax_number)) {
-            $customFields[__('tax number')] = $address->tax_number;
+        if (! empty($address['tax_number'])) {
+            $customFields[__('tax number')] = $address['tax_number'];
         }
 
         return $customFields;
+    }
+
+    /**
+     * Resolve the address printed on subscription invoices.
+     *
+     * Bluespond uses the BusinessProfile as the single source of truth for an
+     * org's address (entered during onboarding / Business Settings). The legacy
+     * tenant_address record is consulted only as a fallback for tenants whose
+     * data predates that consolidation, or whose BusinessProfile is empty.
+     *
+     * Returns a normalized array keyed by line_1/line_2/city/state/zip/country_code/tax_number,
+     * or null when neither source has any address data.
+     */
+    private function resolveInvoiceAddress(Tenant $tenant): ?array
+    {
+        $profile = $tenant->businessProfile;
+
+        if ($profile && ($profile->address_line_1 || $profile->city || $profile->zip_code)) {
+            return [
+                'line_1' => $profile->address_line_1,
+                'line_2' => $profile->address_line_2,
+                'city' => $profile->city,
+                'state' => $profile->state,
+                'zip' => $profile->zip_code,
+                'country_code' => $profile->country,
+                'tax_number' => null, // BusinessProfile has no tax_number yet — add later if needed
+            ];
+        }
+
+        $legacy = $tenant->address()->first();
+
+        if ($legacy) {
+            return [
+                'line_1' => $legacy->address_line_1,
+                'line_2' => $legacy->address_line_2,
+                'city' => $legacy->city,
+                'state' => $legacy->state,
+                'zip' => $legacy->zip,
+                'country_code' => $legacy->country_code,
+                'tax_number' => $legacy->tax_number,
+            ];
+        }
+
+        return null;
     }
 
     public function canGenerateInvoices(Transaction $transaction): bool

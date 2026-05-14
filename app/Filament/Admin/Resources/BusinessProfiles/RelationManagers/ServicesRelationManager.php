@@ -6,6 +6,7 @@ use App\Models\Service;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -31,6 +32,13 @@ class ServicesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
+                ImageColumn::make('image')
+                    ->label('')
+                    ->disk('public')
+                    ->square()
+                    ->size(40)
+                    ->extraImgAttributes(['class' => 'rounded-lg']),
+
                 TextColumn::make('name')
                     ->label(__('Name'))
                     ->searchable()

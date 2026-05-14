@@ -1,4 +1,11 @@
 <div class="space-y-6">
+    @php
+        $inputClass = fn (string $key) => 'block w-full rounded-lg border bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 '
+            .($errors->has($key)
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                : 'border-slate-300 focus:border-teal-500 focus:ring-teal-500/20');
+    @endphp
+
     <div>
         <h2 class="text-xl font-bold text-slate-900">{{ __('What services do you offer?') }}</h2>
         <p class="mt-1 text-sm text-slate-500">
@@ -17,21 +24,21 @@
             <div class="grid grid-cols-12 items-end gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4" wire:key="service-{{ $index }}">
                 <div class="col-span-12 sm:col-span-5">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Service name') }}</label>
-                    <input type="text" wire:model="services.{{ $index }}.name"
-                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                    <input type="text" wire:model.blur="services.{{ $index }}.name" maxlength="255"
+                           class="{{ $inputClass("services.{$index}.name") }}"
                            placeholder="e.g. Haircut">
                     @error("services.{$index}.name") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="col-span-6 sm:col-span-3">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Duration (min)') }}</label>
-                    <input type="number" min="5" max="1440" step="5" wire:model="services.{{ $index }}.duration_minutes"
-                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
+                    <input type="number" min="5" max="1440" step="5" wire:model.blur="services.{{ $index }}.duration_minutes"
+                           class="{{ $inputClass("services.{$index}.duration_minutes") }}">
                     @error("services.{$index}.duration_minutes") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="col-span-5 sm:col-span-3">
                     <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Price (USD)') }}</label>
-                    <input type="number" min="0" step="0.01" wire:model="services.{{ $index }}.price"
-                           class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20">
+                    <input type="number" min="0" max="99999.99" step="0.01" wire:model.blur="services.{{ $index }}.price"
+                           class="{{ $inputClass("services.{$index}.price") }}">
                     @error("services.{$index}.price") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div class="col-span-1 flex justify-end">

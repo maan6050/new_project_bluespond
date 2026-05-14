@@ -75,6 +75,11 @@ class Tenant extends Model
         return $this->hasOne(BusinessProfile::class);
     }
 
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

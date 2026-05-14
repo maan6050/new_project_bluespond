@@ -14,7 +14,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -32,24 +34,42 @@ class BusinessSetupWizard extends Component
     public ?int $businessProfileId = null;
 
     // Step 1 - Business Info
+    #[Validate('required|string|min:2|max:255|regex:/\p{L}/u')]
     public string $businessName = '';
 
+    #[Validate('required|integer|exists:business_categories,id')]
     public ?int $categoryId = null;
 
+    #[Validate('nullable|string|max:2000')]
     public string $description = '';
 
+    // Allow digits, +, -, (), spaces. Min 7 chars when provided (shortest
+    // sensible phone, e.g. local 7-digit). Max 20 fits E.164 + formatting.
+    #[Validate('nullable|string|min:7|max:20|regex:/^[+\d\s\-()]+$/')]
     public string $phone = '';
 
+    #[Validate('nullable|string|max:255')]
     public string $addressLine1 = '';
 
+    // City/state: must contain at least one letter (rejects "63636" or "@!@#")
+    // and only allow letters/spaces/dots/apostrophes/hyphens/commas. Handles
+    // "St. Louis", "O'Fallon", "Saint-Pierre", "Washington, D.C." etc.
+    #[Validate('nullable|string|max:100|regex:/^(?=.*\p{L})[\p{L}\s.\'\-,]+$/u')]
     public string $city = '';
 
+    #[Validate('nullable|string|max:100|regex:/^(?=.*\p{L})[\p{L}\s.\'\-,]+$/u')]
     public string $state = '';
 
+    // Alphanumeric groups separated by AT MOST one dash or space. Accepts
+    // US (12345 / 12345-6789), CA (K1A 0B1), UK (SW1A 1AA) — rejects dash-spam
+    // like "11211----" or "----".
+    #[Validate('nullable|string|max:20|regex:/^[A-Za-z0-9]+([- ][A-Za-z0-9]+)*$/')]
     public string $zipCode = '';
 
+    #[Validate('required|string|size:2|regex:/^[A-Z]{2}$/')]
     public string $country = 'US';
 
+    #[Validate('required|string|timezone')]
     public string $timezone = 'America/New_York';
 
     // Step 2 - Services
@@ -65,8 +85,13 @@ class BusinessSetupWizard extends Component
     public array $hours = [];
 
     // Step 4 - Publish
+    // Validate on upload so Livewire rejects bad files before the preview
+    // tries to render — `temporaryUrl()` throws FileNotPreviewableException
+    // for non-image MIMEs (e.g. .avif) the moment the blade re-renders.
+    #[Validate('nullable|file|mimes:jpg,jpeg,png,webp,svg|max:4096')]
     public $logo = null;
 
+    #[Validate('nullable|file|mimes:jpg,jpeg,png,webp|max:8192')]
     public $coverImage = null;
 
     public bool $isPublished = true;
@@ -148,12 +173,16 @@ class BusinessSetupWizard extends Component
 
         if ($hours->isNotEmpty()) {
             $dayNames = [0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'];
+            // MySQL TIME columns hydrate as "HH:MM:SS"; <input type="time"> and
+            // our date_format:H:i validator both expect "HH:MM". Trim seconds
+            // so the property's canonical format matches what the form sends.
+            $stripSeconds = fn (?string $t): ?string => $t === null ? null : substr($t, 0, 5);
             $this->hours = $hours->map(fn (BusinessHours $h) => [
                 'day_of_week' => $h->day_of_week,
                 'day_name' => $dayNames[$h->day_of_week],
                 'is_closed' => (bool) $h->is_closed,
-                'open_time' => $h->open_time,
-                'close_time' => $h->close_time,
+                'open_time' => $stripSeconds($h->open_time),
+                'close_time' => $stripSeconds($h->close_time),
             ])->toArray();
         } else {
             $this->initializeHours();
@@ -224,42 +253,129 @@ class BusinessSetupWizard extends Component
         }
     }
 
+    /**
+     * Step 1 rules. Mirrors the #[Validate] attributes so $this->validate()
+     * in saveStep1 enforces them as a single batch (attributes also fire
+     * per-field on update for inline feedback).
+     */
+    private function rulesForStep1(): array
+    {
+        return [
+            'businessName' => ['required', 'string', 'min:2', 'max:255', 'regex:/\p{L}/u'],
+            'categoryId' => ['required', 'integer', 'exists:business_categories,id'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'phone' => ['nullable', 'string', 'min:7', 'max:20', 'regex:/^[+\d\s\-()]+$/'],
+            'addressLine1' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:100', 'regex:/^(?=.*\p{L})[\p{L}\s.\'\-,]+$/u'],
+            'state' => ['nullable', 'string', 'max:100', 'regex:/^(?=.*\p{L})[\p{L}\s.\'\-,]+$/u'],
+            'zipCode' => ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9]+([- ][A-Za-z0-9]+)*$/'],
+            'country' => ['required', 'string', 'size:2', 'regex:/^[A-Z]{2}$/'],
+            'timezone' => ['required', 'string', 'timezone'],
+        ];
+    }
+
+    /**
+     * Custom messages applied wherever `validate*()` is called without explicit
+     * messages, AND to inline `#[Validate]` property validation via Livewire's
+     * auto-discovery. Keeps copy in one place so on-blur and on-submit say the
+     * same thing.
+     */
+    protected function messages(): array
+    {
+        return [
+            // Step 1
+            'businessName.regex' => __('Business name must contain at least one letter.'),
+            'phone.regex' => __('Phone can only contain digits, spaces, and the symbols + - ( ).'),
+            'zipCode.regex' => __('Enter a valid postal code (e.g. 12345, 12345-6789, or K1A 0B1).'),
+            'city.regex' => __('Enter a valid city name (letters, spaces, and . \' - , only).'),
+            'state.regex' => __('Enter a valid state (letters, spaces, and . \' - only).'),
+            // Step 4 — show MB instead of Laravel's default "kilobytes" wording
+            'logo.max' => __('Logo must not be larger than 4 MB.'),
+            'logo.mimes' => __('Logo must be a JPG, PNG, WebP, or SVG file.'),
+            'coverImage.max' => __('Cover image must not be larger than 8 MB.'),
+            'coverImage.mimes' => __('Cover image must be a JPG, PNG, or WebP file.'),
+            // Step 2
+            'services.*.name.min' => __('Service name must be at least 2 characters.'),
+            'services.*.duration_minutes.multiple_of' => __('Duration must be in 5-minute increments.'),
+            'services.*.price.regex' => __('Price can have at most 2 decimal places.'),
+            'services.*.price.max' => __('Price must not exceed $99,999.99.'),
+            // Step 3
+            'hours.*.open_time.date_format' => __('Opening time must be in HH:MM format.'),
+            'hours.*.close_time.date_format' => __('Closing time must be in HH:MM format.'),
+            'hours.*.open_time.required_if' => __('Opening time is required when the day is open.'),
+            'hours.*.close_time.required_if' => __('Closing time is required when the day is open.'),
+        ];
+    }
+
+    private function rulesForStep2(): array
+    {
+        return [
+            'services' => ['required', 'array', 'min:1', 'max:50'],
+            'services.*.name' => ['required', 'string', 'min:2', 'max:255'],
+            'services.*.duration_minutes' => ['required', 'integer', 'min:5', 'max:1440', 'multiple_of:5'],
+            // Stored as cents, capped at $99,999.99 ($/service). regex caps
+            // user input to at most 2 decimal places (e.g. 25.99 ok, 25.999 not).
+            'services.*.price' => ['required', 'numeric', 'min:0', 'max:99999.99', 'regex:/^\d+(\.\d{1,2})?$/'],
+        ];
+    }
+
+    private function rulesForStep3(): array
+    {
+        return [
+            'hours' => ['required', 'array', 'size:7'],
+            'hours.*.day_of_week' => ['required', 'integer', 'min:0', 'max:6'],
+            'hours.*.is_closed' => ['required', 'boolean'],
+            'hours.*.open_time' => ['nullable', 'required_if:hours.*.is_closed,false', 'date_format:H:i'],
+            'hours.*.close_time' => ['nullable', 'required_if:hours.*.is_closed,false', 'date_format:H:i'],
+        ];
+    }
+
+
     private function saveStep1(): void
     {
-        $this->validate([
-            'businessName' => ['required', 'string', 'max:255'],
-            'categoryId' => ['required', 'integer', 'exists:business_categories,id'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'addressLine1' => ['nullable', 'string', 'max:255'],
-            'city' => ['nullable', 'string', 'max:100'],
-            'state' => ['nullable', 'string', 'max:100'],
-            'zipCode' => ['nullable', 'string', 'max:20'],
-            'timezone' => ['required', 'string', 'max:50'],
-        ]);
+        $this->validate($this->rulesForStep1());
 
         $tenant = $this->resolveOrCreateTenant();
         $category = BusinessCategory::find($this->categoryId);
 
         DB::transaction(function () use ($tenant, $category) {
-            $profile = BusinessProfile::updateOrCreate(
-                ['tenant_id' => $tenant->id],
-                [
-                    'business_name' => $this->businessName,
-                    'slug' => $this->generateUniqueSlug($this->businessName),
-                    'category_id' => $category->id,
-                    'description' => $this->description ?: null,
-                    'phone' => $this->phone ?: null,
-                    'address_line_1' => $this->addressLine1 ?: null,
-                    'city' => $this->city ?: null,
-                    'state' => $this->state ?: null,
-                    'zip_code' => $this->zipCode ?: null,
-                    'country' => $this->country,
-                    'timezone' => $this->timezone,
-                    'currency' => 'USD',
-                    'vertical' => $category->vertical ?? BusinessVertical::APPOINTMENTS->value,
-                    'is_published' => false,
-                ],
-            );
+            // BusinessProfile uses SoftDeletes, but the DB unique constraint on
+            // tenant_id doesn't ignore soft-deleted rows. Default updateOrCreate
+            // would query without trashed, miss a soft-deleted profile, then
+            // hit a 1062 violation on insert. Lookup withTrashed and restore
+            // instead.
+            $profile = BusinessProfile::withTrashed()
+                ->firstOrNew(['tenant_id' => $tenant->id]);
+
+            if ($profile->trashed()) {
+                $profile->restore();
+            }
+
+            $profile->fill([
+                'business_name' => $this->businessName,
+                'slug' => BusinessProfile::generateUniqueSlug($this->businessName, $profile->id),
+                'category_id' => $category->id,
+                'description' => $this->description ?: null,
+                'phone' => $this->phone ?: null,
+                'address_line_1' => $this->addressLine1 ?: null,
+                'city' => $this->city ?: null,
+                'state' => $this->state ?: null,
+                'zip_code' => $this->zipCode ?: null,
+                'country' => $this->country,
+                'timezone' => $this->timezone,
+                'currency' => 'USD',
+                'vertical' => $category->vertical ?? BusinessVertical::APPOINTMENTS->value,
+                'is_published' => false,
+            ])->save();
+
+            // Tenant = Business (per 01-SAASYKIT-AUDIT §6). Checkout creates the
+            // tenant with an auto-generated workspace name; once the owner provides
+            // a real business name, sync it onto the tenant so the workspace
+            // switcher and admin list show the right thing.
+            $tenant->forceFill([
+                'name' => $this->businessName,
+                'is_name_auto_generated' => false,
+            ])->save();
 
             $this->businessProfileId = $profile->id;
 
@@ -275,23 +391,21 @@ class BusinessSetupWizard extends Component
 
     private function saveStep2(): void
     {
-        $this->validate([
-            'services' => ['required', 'array', 'min:1'],
-            'services.*.name' => ['required', 'string', 'max:255'],
-            'services.*.duration_minutes' => ['required', 'integer', 'min:5', 'max:1440'],
-            'services.*.price' => ['required', 'numeric', 'min:0'],
-        ]);
+        $this->validate($this->rulesForStep2());
 
         $profile = BusinessProfile::findOrFail($this->businessProfileId);
 
         DB::transaction(function () use ($profile) {
-            Service::where('tenant_id', $profile->tenant_id)->delete();
+            // Onboarding wizard is a "reset & replace" flow — force-delete so we
+            // don't leave soft-deleted rows occupying the (tenant_id, slug) unique
+            // constraint each time the user revisits step 2.
+            Service::where('tenant_id', $profile->tenant_id)->forceDelete();
 
             foreach ($this->services as $i => $service) {
                 Service::create([
                     'tenant_id' => $profile->tenant_id,
                     'name' => $service['name'],
-                    'slug' => $this->generateUniqueServiceSlug($profile->tenant_id, $service['name'], $i),
+                    'slug' => Service::generateUniqueSlug($profile->tenant_id, $service['name']),
                     'duration_minutes' => (int) $service['duration_minutes'],
                     'price' => (int) round(((float) $service['price']) * 100),
                     'is_active' => true,
@@ -306,19 +420,23 @@ class BusinessSetupWizard extends Component
 
     private function saveStep3(): void
     {
-        $this->validate([
-            'hours' => ['required', 'array', 'size:7'],
-            'hours.*.day_of_week' => ['required', 'integer', 'min:0', 'max:6'],
-            'hours.*.is_closed' => ['required', 'boolean'],
-            'hours.*.open_time' => ['nullable', 'required_if:hours.*.is_closed,false'],
-            'hours.*.close_time' => ['nullable', 'required_if:hours.*.is_closed,false'],
-        ]);
+        $this->validate($this->rulesForStep3());
 
         $hasOpenDay = collect($this->hours)->contains(fn ($h) => ! $h['is_closed']);
         if (! $hasOpenDay) {
-            $this->addError('hours', 'You must have at least one day open to accept bookings.');
+            $this->addError('hours', __('You must have at least one day open to accept bookings.'));
 
             return;
+        }
+
+        foreach ($this->hours as $i => $h) {
+            if (! $h['is_closed'] && $h['open_time'] && $h['close_time']
+                && strtotime($h['close_time']) <= strtotime($h['open_time'])
+            ) {
+                $this->addError("hours.{$i}.close_time", __('Closing time must be after opening time.'));
+
+                return;
+            }
         }
 
         $profile = BusinessProfile::findOrFail($this->businessProfileId);
@@ -340,12 +458,60 @@ class BusinessSetupWizard extends Component
         $this->currentStep = 4;
     }
 
+    /**
+     * Generic per-field validation for array properties (services.*, hours.*).
+     * Simple top-level properties auto-validate via their #[Validate] attribute;
+     * array dot-paths need this hook to surface errors inline before submit.
+     */
+    public function updated(string $name): void
+    {
+        if (str_starts_with($name, 'services.')) {
+            $this->validateOnly($name, $this->rulesForStep2());
+        } elseif (str_starts_with($name, 'hours.')) {
+            $this->validateOnly($name, $this->rulesForStep3());
+        }
+    }
+
+    public function updatedLogo(): void
+    {
+        $this->rejectInvalidUpload('logo');
+    }
+
+    public function updatedCoverImage(): void
+    {
+        $this->rejectInvalidUpload('coverImage');
+    }
+
+    public function removeLogo(): void
+    {
+        $this->logo = null;
+        $this->resetErrorBag('logo');
+    }
+
+    public function removeCoverImage(): void
+    {
+        $this->coverImage = null;
+        $this->resetErrorBag('coverImage');
+    }
+
+    /**
+     * Run the property's #[Validate] rules immediately on upload. On failure,
+     * null out the property so the blade's preview block (which calls
+     * temporaryUrl()) doesn't crash on an unsupported MIME type.
+     */
+    private function rejectInvalidUpload(string $property): void
+    {
+        try {
+            $this->validateOnly($property);
+        } catch (ValidationException $e) {
+            $this->{$property} = null;
+            throw $e;
+        }
+    }
+
     private function saveStep4(): void
     {
-        $this->validate([
-            'logo' => ['nullable', 'image', 'max:4096'],
-            'coverImage' => ['nullable', 'image', 'max:8192'],
-        ]);
+        $this->validate();
 
         $profile = BusinessProfile::findOrFail($this->businessProfileId);
 
@@ -410,25 +576,6 @@ class BusinessSetupWizard extends Component
         $tenant->users()->attach($user->id);
 
         return $tenant;
-    }
-
-    private function generateUniqueSlug(string $name): string
-    {
-        return BusinessProfile::generateUniqueSlug($name, $this->businessProfileId);
-    }
-
-    private function generateUniqueServiceSlug(int $tenantId, string $name, int $fallbackIndex): string
-    {
-        $base = Str::slug($name) ?: 'service-'.$fallbackIndex;
-        $slug = $base;
-        $counter = 1;
-
-        while (Service::where('tenant_id', $tenantId)->where('slug', $slug)->exists()) {
-            $slug = $base.'-'.$counter;
-            $counter++;
-        }
-
-        return $slug;
     }
 
     private function initializeHours(): void

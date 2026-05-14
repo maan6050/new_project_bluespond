@@ -3,16 +3,13 @@
 namespace App\Providers\Filament;
 
 use App\Constants\AnnouncementPlacement;
-use App\Constants\TenancyPermissionConstants;
 use App\Filament\Dashboard\Pages\CreateWorkspace;
-use App\Filament\Dashboard\Pages\TenantSettings;
 use App\Filament\Dashboard\Pages\TwoFactorAuth\TwoFactorAuth;
 use App\Http\Middleware\UpdateUserLastSeenAt;
 use App\Livewire\AddressForm;
 use App\Models\BusinessHours;
 use App\Models\Service;
 use App\Models\Tenant;
-use App\Services\TenantPermissionService;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -62,21 +59,12 @@ class DashboardPanelProvider extends PanelProvider
                     )
                     ->url(fn () => route('filament.admin.pages.dashboard'))
                     ->icon('heroicon-s-cog-8-tooth'),
-                Action::make('workspace-settings')
-                    ->label(__('Workspace Settings'))
-                    ->visible(
-                        function () {
-                            $tenantPermissionService = app(TenantPermissionService::class);
-
-                            return $tenantPermissionService->tenantUserHasPermissionTo(
-                                Filament::getTenant(),
-                                auth()->user(),
-                                TenancyPermissionConstants::PERMISSION_UPDATE_TENANT_SETTINGS
-                            );
-                        }
-                    )
-                    ->icon('heroicon-s-cog-8-tooth')
-                    ->url(fn () => TenantSettings::getUrl()),
+                // Workspace Settings is intentionally hidden — Bluespond uses the
+                // Business Settings page as the single source of truth for org name
+                // and address. Invoices read the address from BusinessProfile
+                // (see InvoiceService::addAddressInfo), so a separate tenant-level
+                // address page would only duplicate data. The /tenant-settings URL
+                // still resolves for support / legacy data, but it's not in the menu.
                 Action::make('two-factor-auth')
                     ->label(__('2-Factor Authentication'))
                     ->visible(

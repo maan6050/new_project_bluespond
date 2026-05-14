@@ -7,6 +7,7 @@ use App\Notifications\Auth\QueuedVerifyEmail;
 use App\Services\OrderService;
 use App\Services\SubscriptionService;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -25,7 +26,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasTenants, MustVerifyEmail, TwoFactorAuthenticatable
+class User extends Authenticatable implements FilamentUser, HasAvatar, HasTenants, MustVerifyEmail, TwoFactorAuthenticatable
 {
     use HasApiTokens, HasFactory, HasOneTimePasswords, HasRoles, Notifiable, TwoFactorAuthentication;
 
@@ -218,6 +219,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         }
 
         return Storage::disk(config('filesystems.media_disk'))->url($this->avatar);
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar_url;
     }
 
     /**
