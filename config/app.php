@@ -178,10 +178,11 @@ return [
         'discord' => env('SOCIAL_DISCORD_URL'),
     ],
 
-    // this is the name of the logo file in the public directory
+    // Bluespond brand logos. 'dark' = logo for light backgrounds (dark mark);
+    // 'light' = inverted/white logo for dark backgrounds (e.g. blue panels).
     'logo' => [
-        'light' => 'images/logo-light.png',
-        'dark' => 'images/logo-dark.png',
+        'light' => 'images/bluespond-logo-light.svg',
+        'dark' => 'images/bluespond-logo.svg',
     ],
 
     'recaptcha_enabled' => env('RECAPTCHA_ENABLED', false),

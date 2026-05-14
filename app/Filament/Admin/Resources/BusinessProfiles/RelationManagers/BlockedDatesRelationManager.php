@@ -49,14 +49,18 @@ class BlockedDatesRelationManager extends RelationManager
                     ->searchable(),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->successNotificationTitle(__('Blocked date added')),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle(__('Blocked date updated')),
+                DeleteAction::make()
+                    ->successNotificationTitle(__('Blocked date removed')),
             ])
             ->toolbarActions([
-                DeleteBulkAction::make(),
+                DeleteBulkAction::make()
+                    ->successNotificationTitle(__('Blocked dates removed')),
             ])
             ->defaultSort('date')
             ->modelLabel(__('Blocked Date'));

@@ -89,4 +89,36 @@ class Service extends Model
 
         return $slug;
     }
+
+    /**
+     * Auto-unpublish the owning BusinessProfile when service changes make it
+     * unbookable (e.g. last active service deleted, or last is_active=true
+     * service flipped to inactive). Prevents the "published but empty" state
+     * where customers see a Book Now button that goes nowhere.
+     */
+    protected static function booted(): void
+    {
+        static::deleted(function (Service $service): void {
+            static::maybeUnpublishProfile($service);
+        });
+
+        static::updated(function (Service $service): void {
+            // Only re-check when the active flag flipped off — other edits
+            // (name, price, image) can't drop the business below publishable.
+            if ($service->wasChanged('is_active') && ! $service->is_active) {
+                static::maybeUnpublishProfile($service);
+            }
+        });
+    }
+
+    private static function maybeUnpublishProfile(Service $service): void
+    {
+        $profile = $service->tenant?->businessProfile;
+
+        if ($profile?->is_published && ! $profile->canPublish()) {
+            // saveQuietly skips the saving() hook on BusinessProfile, which
+            // would otherwise reject the save because canPublish() is false.
+            $profile->forceFill(['is_published' => false])->saveQuietly();
+        }
+    }
 }

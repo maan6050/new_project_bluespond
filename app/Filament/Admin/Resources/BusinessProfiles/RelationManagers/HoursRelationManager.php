@@ -9,6 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -75,16 +76,20 @@ class HoursRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->successNotification(Notification::make()->success()->title(__('Business hours added')))
                     ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
             ])
             ->recordActions([
                 EditAction::make()
+                    ->successNotification(Notification::make()->success()->title(__('Business hours updated')))
                     ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
                 DeleteAction::make()
+                    ->successNotification(Notification::make()->success()->title(__('Business hours removed')))
                     ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
             ])
             ->toolbarActions([
                 DeleteBulkAction::make()
+                    ->successNotification(Notification::make()->success()->title(__('Business hours removed')))
                     ->after(fn ($livewire) => $livewire->dispatch('business-profile-updated')),
             ])
             ->defaultSort('day_of_week')

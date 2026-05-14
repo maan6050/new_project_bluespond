@@ -13,6 +13,7 @@ use App\Services\UserVerificationService;
 use App\Services\VerificationProviders\TwilioProvider;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -59,5 +60,35 @@ class AppServiceProvider extends ServiceProvider
         FilamentAsset::register([
             Js::make('components-script', __DIR__.'/../../resources/js/components.js'),
         ]);
+
+        $this->stripEmptyFilamentNotifications();
+    }
+
+    /**
+     * Defensive filter — strip session-flashed Filament notifications that
+     * have no title (and no body). Filament v4 dispatches an empty-toast
+     * placeholder in some relation-manager flows; this discards them before
+     * the Notifications Livewire component picks them up.
+     */
+    private function stripEmptyFilamentNotifications(): void
+    {
+        Event::listen('Illuminate\Foundation\Http\Events\RequestHandled', function (): void {
+            foreach (['filament.notifications', 'filament.notifications.claimed'] as $bucket) {
+                if (! session()->has($bucket)) {
+                    continue;
+                }
+
+                $kept = collect(session()->get($bucket, []))
+                    ->filter(fn (array $n): bool => filled($n['title'] ?? null) || filled($n['body'] ?? null))
+                    ->values()
+                    ->all();
+
+                if ($kept === []) {
+                    session()->forget($bucket);
+                } else {
+                    session()->put($bucket, $kept);
+                }
+            }
+        });
     }
 }

@@ -63,14 +63,18 @@ class SocialLinksRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->successNotificationTitle(__('Social link added')),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle(__('Social link updated')),
+                DeleteAction::make()
+                    ->successNotificationTitle(__('Social link removed')),
             ])
             ->toolbarActions([
-                DeleteBulkAction::make(),
+                DeleteBulkAction::make()
+                    ->successNotificationTitle(__('Social links removed')),
             ])
             ->defaultSort('sort_order')
             ->modelLabel(__('Social Link'));

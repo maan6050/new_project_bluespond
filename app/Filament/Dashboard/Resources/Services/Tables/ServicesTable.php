@@ -2,6 +2,7 @@
 
 namespace App\Filament\Dashboard\Resources\Services\Tables;
 
+use App\Models\Service;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -73,7 +74,11 @@ class ServicesTable
             ->modifyQueryUsing(fn (Builder $query) => $query->withoutGlobalScope(SoftDeletingScope::class))
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->modalHeading(fn (Service $record): string => self::isLastActiveService($record)
+                        ? __('Delete your only active service?')
+                        : __('Delete service'))
+                    ->modalDescription(fn (Service $record): ?string => self::lastServiceDeleteWarning($record)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -82,5 +87,38 @@ class ServicesTable
                     ForceDeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /**
+     * True when this is the only currently-active service for the tenant —
+     * regardless of publish state. Deleting it means the business will have
+     * no bookable offering, which is worth warning the owner about even if
+     * they're already unpublished.
+     */
+    private static function isLastActiveService(Service $record): bool
+    {
+        if (! $record->is_active) {
+            return false;
+        }
+
+        return Service::where('tenant_id', $record->tenant_id)
+            ->where('is_active', true)
+            ->where('id', '!=', $record->id)
+            ->count() === 0;
+    }
+
+    private static function lastServiceDeleteWarning(Service $record): ?string
+    {
+        if (! self::isLastActiveService($record)) {
+            return null;
+        }
+
+        $profile = $record->tenant?->businessProfile;
+
+        if ($profile?->is_published) {
+            return __('This is your only active service. Deleting it will unpublish your business until you add another, so customers will not be able to book.');
+        }
+
+        return __('This is your only active service. Without it your business cannot go live until you add another.');
     }
 }

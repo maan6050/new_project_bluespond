@@ -91,10 +91,7 @@ class BusinessProfileResource extends Resource
                             ->preload()
                             ->nullable(),
 
-                        TextInput::make('business_name')
-                            ->label(__('Business Name'))
-                            ->required()
-                            ->maxLength(255),
+                        BusinessOwnerFields::businessName(),
 
                         TextInput::make('slug')
                             ->label(__('Slug'))
@@ -125,10 +122,7 @@ class BusinessProfileResource extends Resource
                     ->columns(2)
                     ->collapsible()
                     ->components([
-                        TextInput::make('phone')
-                            ->label(__('Phone'))
-                            ->tel()
-                            ->maxLength(20),
+                        BusinessOwnerFields::phone(),
 
                         BusinessOwnerFields::ownerEmail(),
 
@@ -140,22 +134,13 @@ class BusinessProfileResource extends Resource
                             ->label(__('Address Line 2'))
                             ->maxLength(255),
 
-                        TextInput::make('city')
-                            ->label(__('City'))
-                            ->maxLength(100),
+                        BusinessOwnerFields::city(),
 
-                        TextInput::make('state')
-                            ->label(__('State'))
-                            ->maxLength(100),
+                        BusinessOwnerFields::state(),
 
-                        TextInput::make('zip_code')
-                            ->label(__('ZIP Code'))
-                            ->maxLength(20),
+                        BusinessOwnerFields::zipCode(),
 
-                        TextInput::make('country')
-                            ->label(__('Country (ISO-2)'))
-                            ->default('US')
-                            ->maxLength(2),
+                        BusinessOwnerFields::country(),
 
                         TextInput::make('latitude')
                             ->label(__('Latitude'))
@@ -227,7 +212,7 @@ class BusinessProfileResource extends Resource
                                     return __('When on, the business is visible on the marketplace and accepts public bookings.');
                                 }
 
-                                return '⚠ '.__('Cannot publish until you add: ').implode(', ', $blockers).'.';
+                                return '⚠ '.__('Owner setup incomplete — missing: ').implode(', ', $blockers).'.';
                             })
                             ->disabled(fn (?BusinessProfile $record): bool => $record !== null && $record->exists && ! $record->canPublish())
                             ->default(false),
@@ -283,7 +268,7 @@ class BusinessProfileResource extends Resource
                     ->getStateUsing(fn (BusinessProfile $record): bool => $record->isLive())
                     ->disabled(fn (BusinessProfile $record): bool => ! $record->isLive() && ! $record->canPublish())
                     ->tooltip(fn (BusinessProfile $record): ?string => (! $record->canPublish())
-                        ? __('Cannot publish until you add: ').implode(', ', $record->publishBlockers())
+                        ? __('Owner setup incomplete — missing: ').implode(', ', $record->publishBlockers())
                         : null
                     ),
 

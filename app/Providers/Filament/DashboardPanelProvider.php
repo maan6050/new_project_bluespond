@@ -154,8 +154,9 @@ class DashboardPanelProvider extends PanelProvider
 
         $profile = $tenant->businessProfile;
 
+        // Onboarding complete? Hand off to the unpublished-state banner.
         if ($profile && $profile->setup_completed_at !== null) {
-            return '';
+            return $this->renderUnpublishedBanner($profile);
         }
 
         $currentStep = 1;
@@ -172,6 +173,69 @@ class DashboardPanelProvider extends PanelProvider
         return Blade::render(
             '<x-onboarding-banner :current-step="$currentStep" />',
             ['currentStep' => $currentStep]
+        );
+    }
+
+    /**
+     * Renders a banner when an onboarded business is missing publish prerequisites
+     * (e.g. all services deleted, all days closed — usually the result of the
+     * auto-unpublish hook on Service/BusinessHours, or pre-publish setup gaps).
+     *
+     * Intentionally NOT shown when the business COULD publish but is_published
+     * is simply off — that's a deliberate owner choice (e.g. paused for vacation)
+     * and nagging them about it would be noise.
+     *
+     * Scoped to the Dashboard landing page only — once the owner navigates
+     * into Business Settings or Services, they're already at a place to fix
+     * the issue and don't need a redundant nudge.
+     */
+    private function renderUnpublishedBanner(\App\Models\BusinessProfile $profile): string
+    {
+        $routeName = request()->route()?->getName() ?? '';
+        if (! str_ends_with($routeName, 'pages.dashboard')) {
+            return '';
+        }
+
+        // Banner only when something is actually missing. "Ready but unpublished"
+        // is an owner decision (paused / vacation / maintenance) — no warning.
+        if ($profile->canPublish()) {
+            return '';
+        }
+
+        return Blade::render(
+            '<x-unpublished-banner :blockers="$blockers" :business-settings-url="$url" />',
+            [
+                'blockers' => $profile->publishBlockers(),
+                'url' => $this->resolveFixUrl($profile),
+            ]
+        );
+    }
+
+    /**
+     * Pick the most useful destination for the banner's "Fix & Publish" button
+     * based on which publish blocker is currently dominant:
+     *   - missing services    -> Services list (one click to add)
+     *   - missing hours/etc.  -> Business Settings edit page (hours live in
+     *                            the relation manager there)
+     * If both are missing, services is the more common first step.
+     */
+    private function resolveFixUrl(\App\Models\BusinessProfile $profile): string
+    {
+        $tenant = Filament::getTenant();
+
+        $needsService = $profile->services()->where('is_active', true)->doesntExist();
+
+        if ($needsService) {
+            return \App\Filament\Dashboard\Resources\Services\ServiceResource::getUrl(
+                name: 'index',
+                tenant: $tenant,
+            );
+        }
+
+        return \App\Filament\Dashboard\Resources\BusinessProfile\BusinessProfileResource::getUrl(
+            name: 'edit',
+            parameters: ['record' => $profile->id],
+            tenant: $tenant,
         );
     }
 }
