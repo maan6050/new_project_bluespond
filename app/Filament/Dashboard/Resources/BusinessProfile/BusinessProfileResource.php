@@ -33,7 +33,9 @@ class BusinessProfileResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
 
-    protected static ?int $navigationSort = -100;
+    // Dashboard sits at sort 0 by default — keep it first. Services and
+    // Business Settings come right after, then SaaSykit's Orders/Subscriptions/etc.
+    protected static ?int $navigationSort = 20;
 
     public static function getPluralModelLabel(): string
     {

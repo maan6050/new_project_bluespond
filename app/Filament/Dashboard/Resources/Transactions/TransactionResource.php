@@ -29,6 +29,8 @@ class TransactionResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
 
+    protected static ?int $navigationSort = 120;
+
     public static function form(Schema $schema): Schema
     {
         return $schema
