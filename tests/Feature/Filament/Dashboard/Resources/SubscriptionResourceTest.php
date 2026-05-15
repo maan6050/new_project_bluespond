@@ -12,7 +12,7 @@ class SubscriptionResourceTest extends FeatureTest
 {
     public function test_list(): void
     {
-        $tenant = $this->createTenant();
+        $tenant = $this->createSubscribedTenant();
         $user = $this->createUser($tenant, [
             TenancyPermissionConstants::PERMISSION_VIEW_SUBSCRIPTIONS,
         ]);
@@ -26,7 +26,7 @@ class SubscriptionResourceTest extends FeatureTest
 
     public function test_list_fails_when_user_has_no_permission(): void
     {
-        $tenant = $this->createTenant();
+        $tenant = $this->createSubscribedTenant();
         $user = $this->createUser($tenant);
 
         $this->actingAs($user);

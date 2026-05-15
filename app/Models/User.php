@@ -128,6 +128,30 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasTenant
         return $this->is_admin;
     }
 
+    /**
+     * Whether this user has at least one tenant with a subscription that
+     * grants app access. The canonical "is this a paying business owner" check
+     * used by the subscription middleware, the post-login redirect, and the
+     * public nav menu.
+     *
+     * PENDING is included because SaaSykit sets the status to PENDING the
+     * moment Stripe confirms checkout — the webhook only later flips it to
+     * ACTIVE. Without PENDING the user gets kicked back to the marketing site
+     * in the seconds between checkout-success and webhook arrival.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->tenants()
+            ->whereHas(
+                'subscriptions',
+                fn ($q) => $q->whereIn('status', [
+                    \App\Constants\SubscriptionStatus::ACTIVE->value,
+                    \App\Constants\SubscriptionStatus::PENDING->value,
+                ]),
+            )
+            ->exists();
+    }
+
     public function isPhoneNumberVerified()
     {
         return $this->phone_number_verified_at !== null;

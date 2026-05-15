@@ -12,7 +12,7 @@ class CreateWorkspaceTest extends FeatureTest
 {
     public function test_cannot_access_create_workspace_page_if_disabled(): void
     {
-        $tenant = $this->createTenant();
+        $tenant = $this->createSubscribedTenant();
         $user = $this->createUser($tenant);
         $this->actingAs($user);
 
@@ -26,7 +26,7 @@ class CreateWorkspaceTest extends FeatureTest
 
     public function test_can_access_create_workspace_page_if_enabled(): void
     {
-        $tenant = $this->createTenant();
+        $tenant = $this->createSubscribedTenant();
         $user = $this->createUser($tenant);
         $this->actingAs($user);
 

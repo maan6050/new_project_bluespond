@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\BlockedUser;
+use App\Http\Middleware\EnsureUserHasActiveSubscription;
 use App\Http\Middleware\Sitemapped;
 use App\Http\Middleware\TrackCouponCode;
 use App\Http\Middleware\TrackReferralCode;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'sitemapped' => Sitemapped::class,
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
+            'subscribed' => EnsureUserHasActiveSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {})->create();

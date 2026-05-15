@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Constants\AnnouncementPlacement;
 use App\Filament\Dashboard\Pages\CreateWorkspace;
 use App\Filament\Dashboard\Pages\TwoFactorAuth\TwoFactorAuth;
+use App\Http\Middleware\EnsureUserHasActiveSubscription;
 use App\Http\Middleware\UpdateUserLastSeenAt;
 use App\Livewire\AddressForm;
 use App\Models\BusinessHours;
@@ -115,6 +116,7 @@ class DashboardPanelProvider extends PanelProvider
             )
             ->authMiddleware([
                 Authenticate::class,
+                EnsureUserHasActiveSubscription::class,
             ])->plugins([
                 BreezyCore::make()
                     ->myProfile(

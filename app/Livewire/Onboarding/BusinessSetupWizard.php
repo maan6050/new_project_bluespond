@@ -104,6 +104,22 @@ class BusinessSetupWizard extends Component
             return;
         }
 
+        $user = Auth::user();
+
+        // 1:1 enforcement (per project planning docs): one user owns at most one
+        // business. If any tenant of theirs is already fully onboarded, never
+        // show the wizard again — even if a stray paid tenant has no business
+        // profile yet, the user can only run onboarding once.
+        $hasCompletedBusiness = $user->tenants()
+            ->whereHas('businessProfile', fn ($q) => $q->whereNotNull('setup_completed_at'))
+            ->exists();
+
+        if ($hasCompletedBusiness) {
+            $this->redirect(route('dashboard'));
+
+            return;
+        }
+
         $tenant = $this->resolveTenant();
 
         if (! $tenant || ! $tenant->businessProfile) {
@@ -113,12 +129,6 @@ class BusinessSetupWizard extends Component
         }
 
         $profile = $tenant->businessProfile;
-
-        if ($profile->setup_completed_at !== null) {
-            $this->redirect(route('home'));
-
-            return;
-        }
 
         $this->loadExistingDataFromProfile($profile);
         $this->currentStep = $this->determineResumeStep($profile);
@@ -554,7 +564,19 @@ class BusinessSetupWizard extends Component
             return null;
         }
 
-        return $user->tenants()->orderByDesc('tenants.id')->first();
+        // Pick the latest tenant the user actually paid for. Tenants whose only
+        // subscription is in status "new" are phantom checkouts (Stripe flow
+        // started but never confirmed) and must not surface as onboardable.
+        return $user->tenants()
+            ->whereHas(
+                'subscriptions',
+                fn ($q) => $q->whereIn('status', [
+                    \App\Constants\SubscriptionStatus::ACTIVE->value,
+                    \App\Constants\SubscriptionStatus::PENDING->value,
+                ]),
+            )
+            ->orderByDesc('tenants.id')
+            ->first();
     }
 
     private function resolveOrCreateTenant(): Tenant

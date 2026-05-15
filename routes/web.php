@@ -171,7 +171,7 @@ Route::get('/checkout/product/success', [
 // Onboarding
 
 Route::get('/onboarding', BusinessSetupWizard::class)
-    ->middleware('auth')
+    ->middleware(['auth', 'subscribed'])
     ->name('onboarding');
 
 // Invitations
