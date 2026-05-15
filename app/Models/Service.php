@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -44,6 +45,17 @@ class Service extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Staff members who can perform this service. The pivot carries optional
+     * per-staff overrides: custom_price (cents) and custom_duration (minutes).
+     */
+    public function staffMembers(): BelongsToMany
+    {
+        return $this->belongsToMany(StaffMember::class, 'service_staff')
+            ->withPivot('custom_price', 'custom_duration')
+            ->withTimestamps();
     }
 
     public function scopeActive(Builder $query): Builder

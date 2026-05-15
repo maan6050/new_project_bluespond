@@ -5,6 +5,7 @@ namespace App\Filament\Dashboard\Resources\StaffMembers;
 use App\Filament\Dashboard\Resources\StaffMembers\Pages\CreateStaffMember;
 use App\Filament\Dashboard\Resources\StaffMembers\Pages\EditStaffMember;
 use App\Filament\Dashboard\Resources\StaffMembers\Pages\ListStaffMembers;
+use App\Filament\Dashboard\Resources\StaffMembers\RelationManagers\ServicesRelationManager;
 use App\Filament\Dashboard\Resources\StaffMembers\Schemas\StaffMemberForm;
 use App\Filament\Dashboard\Resources\StaffMembers\Tables\StaffMembersTable;
 use App\Models\StaffMember;
@@ -43,6 +44,13 @@ class StaffMemberResource extends Resource
     public static function table(Table $table): Table
     {
         return StaffMembersTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ServicesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
