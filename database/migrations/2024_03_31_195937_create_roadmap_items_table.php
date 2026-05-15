@@ -1,10 +1,14 @@
 <?php
 
-use App\Constants\RoadmapItemStatus;
-use App\Constants\RoadmapItemType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+
+// Note: the App\Constants\RoadmapItemStatus / RoadmapItemType enums were removed
+// when the roadmap module was dropped (see 2026_05_05_110000_drop_blog_and_roadmap_tables).
+// The default values below are inlined as plain strings so a fresh `migrate:fresh`
+// can still run this migration. The roadmap_items table is dropped a few migrations
+// later, so these defaults are never actually used.
 
 return new class extends Migration
 {
@@ -18,8 +22,8 @@ return new class extends Migration
             $table->uuid('slug')->unique();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('status')->default(RoadmapItemStatus::PENDING_APPROVAL->value);
-            $table->string('type')->default(RoadmapItemType::FEATURE->value);
+            $table->string('status')->default('pending_approval');
+            $table->string('type')->default('feature');
             $table->integer('upvotes')->default(0);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
