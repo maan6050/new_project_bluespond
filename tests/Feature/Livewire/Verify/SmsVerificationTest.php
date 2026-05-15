@@ -52,7 +52,7 @@ class SmsVerificationTest extends FeatureTest
 
         $user = $user->fresh();
         $this->assertNotNull($user->phone_number_verified_at);
-        $this->assertEquals($user->phone_number, '+18482560284');
+        $this->assertEquals($user->phone, '+18482560284');
 
         $this->assertNull($sessionService->getSmsVerificationDto());
     }
@@ -129,7 +129,7 @@ class SmsVerificationTest extends FeatureTest
         $email2 = 'something+'.rand(1, 1000000).'@gmail.com';
         $user2 = $this->createUser(attributes: [
             'email' => $email2,
-            'phone_number' => '+18482560282',
+            'phone' => '+18482560282',
         ]);
 
         $this->actingAs($user);

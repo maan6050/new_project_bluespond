@@ -259,6 +259,7 @@ class PlanResource extends Resource
     {
         return [
             PricesRelationManager::class,
+            \App\Filament\Admin\Resources\Plans\RelationManagers\LimitsRelationManager::class,
             PaymentProviderDataRelationManager::class,
         ];
     }

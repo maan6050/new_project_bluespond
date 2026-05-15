@@ -27,6 +27,9 @@ class OrderResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    // Slot billing items after Bluespond's Services + Business Settings.
+    protected static ?int $navigationSort = 100;
+
     public static function form(Schema $schema): Schema
     {
         return $schema

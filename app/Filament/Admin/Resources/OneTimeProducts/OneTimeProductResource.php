@@ -32,6 +32,11 @@ class OneTimeProductResource extends Resource
         return __('Product Management');
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema

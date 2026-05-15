@@ -1,14 +1,13 @@
 <?php
 
 use App\Http\Controllers\Auth\OAuthController;
-use App\Http\Controllers\BlogController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentProviders\PaddleController;
 use App\Http\Controllers\ProductCheckoutController;
-use App\Http\Controllers\RoadmapController;
 use App\Http\Controllers\SubscriptionCheckoutController;
 use App\Http\Controllers\SubscriptionController;
+use App\Livewire\Onboarding\BusinessSetupWizard;
 use App\Services\PlanService;
 use App\Services\SessionService;
 use App\Services\TenantCreationService;
@@ -144,15 +143,6 @@ Route::get('/subscription/change-plan-thank-you', [
     'success',
 ])->name('subscription.change-plan.thank-you')->middleware('auth');
 
-// blog
-Route::controller(BlogController::class)
-    ->prefix('/blog')
-    ->group(function () {
-        Route::get('/', 'all')->name('blog')->middleware('sitemapped');
-        Route::get('/category/{slug}', 'category')->name('blog.category');
-        Route::get('/{slug}', 'view')->name('blog.view');
-    });
-
 Route::get('/terms-of-service', function () {
     return view('pages.terms-of-service');
 })->name('terms-of-service')->middleware('sitemapped');
@@ -178,15 +168,11 @@ Route::get('/checkout/product/success', [
     'productCheckoutSuccess',
 ])->name('checkout.product.success')->middleware('auth');
 
-// roadmap
+// Onboarding
 
-Route::controller(RoadmapController::class)
-    ->prefix('/roadmap')
-    ->group(function () {
-        Route::get('/', 'index')->name('roadmap');
-        Route::get('/i/{itemSlug}', 'viewItem')->name('roadmap.viewItem');
-        Route::get('/suggest', 'suggest')->name('roadmap.suggest')->middleware('auth');
-    });
+Route::get('/onboarding', BusinessSetupWizard::class)
+    ->middleware(['auth', 'subscribed'])
+    ->name('onboarding');
 
 // Invitations
 

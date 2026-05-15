@@ -17,6 +17,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Media Disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk used for user-uploaded media (avatars, future profile photos, etc.).
+    | Set MEDIA_DISK=public for local development (served via storage symlink)
+    | and MEDIA_DISK=s3 for production. All upload + display code reads this
+    | value, so flipping it in .env switches the storage backend everywhere.
+    |
+    */
+
+    'media_disk' => env('MEDIA_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

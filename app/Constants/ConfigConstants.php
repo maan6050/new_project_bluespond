@@ -99,7 +99,6 @@ class ConfigConstants
         'mail.mailers.smtp.port',
         'mail.mailers.smtp.username',
         'mail.mailers.smtp.password',
-        'app.roadmap_enabled',
         'app.recaptcha_enabled',
         'recaptcha.api_site_key',
         'recaptcha.api_secret_key',

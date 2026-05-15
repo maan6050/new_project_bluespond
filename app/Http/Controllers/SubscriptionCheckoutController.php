@@ -22,6 +22,16 @@ class SubscriptionCheckoutController extends Controller
 
     public function subscriptionCheckout(string $planSlug)
     {
+        $user = auth()->user();
+
+        // 1:1 enforcement (per project planning docs): one user = one business.
+        // If the user already has an active or pending subscription on any
+        // tenant, block them from buying a second one — send them to the
+        // existing "already subscribed" landing.
+        if ($user !== null && ! $user->isAdmin() && $user->hasActiveSubscription()) {
+            return redirect()->route('checkout.subscription.already-subscribed');
+        }
+
         $plan = Plan::where('slug', $planSlug)->where('is_active', true)->firstOrFail();
         $checkoutDto = $this->sessionService->getSubscriptionCheckoutDto();
 
@@ -32,8 +42,6 @@ class SubscriptionCheckoutController extends Controller
         $checkoutDto->planSlug = $planSlug;
 
         $this->sessionService->saveSubscriptionCheckoutDto($checkoutDto);
-
-        $user = auth()->user();
 
         if ($plan->has_trial &&
             config('app.trial_without_payment.enabled') &&
@@ -96,10 +104,10 @@ class SubscriptionCheckoutController extends Controller
         $this->sessionService->resetSubscriptionCheckoutDto();
 
         if ($subscription && $subscription->type === SubscriptionType::LOCALLY_MANAGED) {
-            return view('checkout.local-subscription-thank-you');
+            return redirect()->route('onboarding');
         }
 
-        return view('checkout.subscription-thank-you');
+        return redirect()->route('onboarding');
     }
 
     public function convertLocalSubscriptionCheckoutSuccess()

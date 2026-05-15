@@ -175,6 +175,16 @@ The application uses Laravel events for domain actions:
 
 ## Coding Standards
 
+### Core Principles
+
+All code written for this project must be **Reusable**, **Easy to modify**, and **Flexible**. The full ruleset — including the AI working agreement, pre-write checklist, communication style, and "Avoid" list — lives in [CLAUDE.md](CLAUDE.md). That file is the canonical source for AI assistants working on this project. AGENTS.md focuses on architecture and what exists in code today.
+
+Quick reminders (full detail in CLAUDE.md):
+
+- **Reusable** — extract before duplicating (Rule of Three); reusable schema fragments in `app/Filament/Schemas/`; cross-model behavior in `app/Models/Concerns/`.
+- **Easy to modify** — Single Responsibility; methods under ~30 lines; no magic strings/numbers; centralize validation on models (e.g., `BusinessProfile::canPublish()`).
+- **Flexible** — depend on interfaces; config over hardcoding; composition over inheritance; Filament closures over static values.
+
 ### SaaSykit-Specific Conventions
 - Services should be stateless and injected via dependency injection
 - Use DTOs for complex data structures passed between layers

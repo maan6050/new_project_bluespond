@@ -3,11 +3,8 @@
 namespace Database\Seeders\Demo;
 
 use App\Constants\PlanType;
-use App\Constants\RoadmapItemStatus;
-use App\Constants\RoadmapItemType;
 use App\Constants\SubscriptionStatus;
 use App\Constants\TenancyPermissionConstants;
-use App\Models\BlogPost;
 use App\Models\Currency;
 use App\Models\Discount;
 use App\Models\Interval;
@@ -31,29 +28,6 @@ class DemoDatabaseSeeder extends Seeder
         private MetricsService $metricsService,
         private TenantPermissionService $tenantPermissionManager,
     ) {}
-
-    private array $blogPostTitles = [
-        'The Art of Responsive Web Design: A Comprehensive Guide',
-        'Exploring the Power of Machine Learning in Everyday Life',
-        "Mastering the Basics: A Beginner's Guide to Python Programming",
-        'The Future of Virtual Reality: Trends and Innovations',
-        'Sustainable Living: Eco-Friendly Practices for a Greener Planet',
-        'Unraveling the Mysteries of Quantum Computing',
-        'Crafting Engaging User Experiences: A UX Design Tutorial',
-        'Demystifying Blockchain Technology: Beyond Cryptocurrencies',
-        'Navigating the World of Cybersecurity: Tips for Online Safety',
-        'The Impact of Artificial Intelligence on Healthcare',
-        'DIY Home Improvement Projects for a Budget-Friendly Upgrade',
-        'Culinary Adventures: Exploring Global Cuisines at Home',
-        'Mindfulness in the Digital Age: Finding Balance in a Busy World',
-        'Capturing the Perfect Shot: Photography Tips for Beginners',
-        'Fitness for All: Tailoring Workouts to Your Lifestyle',
-        'Building a Personal Brand: Strategies for Professional Success',
-        'The Evolution of Social Media: Trends and Influencer Culture',
-        'Unlocking Creativity: A Guide to Overcoming Creative Blocks',
-        'The Power of Storytelling: Crafting Compelling Narratives',
-        'Remote Work Revolution: Maximizing Productivity in a Virtual World',
-    ];
 
     private array $images = [
         'https://unsplash.com/photos/F1MaILUxscM/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8d0pMTzN0U0s1QU18fHx8fDJ8fDE3MDY2MTk4NTF8&force=true&w=1920',
@@ -97,10 +71,8 @@ class DemoDatabaseSeeder extends Seeder
 
         $this->seedDemoData();
         $this->addDiscounts();
-        $this->addBlogPosts($adminUser);
         $this->addSomeUsers();
         $this->addMetrics();
-        $this->addSomeRoadmapItems();
 
         // enable google oauth
         OauthLoginProvider::where('provider_name', 'google')->update(['enabled' => true]);
@@ -367,33 +339,6 @@ class DemoDatabaseSeeder extends Seeder
         }
     }
 
-    private function addBlogPosts(User $user)
-    {
-        foreach ($this->blogPostTitles as $title) {
-
-            BlogPost::flushEventListeners();  // disable event listeners in booted method
-
-            $blog = BlogPost::create([
-                'title' => $title,
-                'slug' => Str::slug($title),
-                'body' => str_repeat('<p>'.$this->loremIpsum.'</p>', rand(10, 15)),
-                'is_published' => true,
-                'published_at' => now()->sub(rand(1, 10), 'days'),
-                'user_id' => $user->id,
-                'author_id' => $user->id,
-            ]);
-
-            // assign an image to the blog post using spatie media library
-
-            try {
-                $blog->addMediaFromUrl($this->images[rand(0, count($this->images) - 1)])
-                    ->toMediaCollection('blog-images');
-            } catch (\Exception $e) {
-                // do nothing
-            }
-        }
-    }
-
     private function addMetrics()
     {
         $firstUserCreatedDate = User::orderBy('created_at', 'asc')->first()->created_at;
@@ -423,30 +368,4 @@ class DemoDatabaseSeeder extends Seeder
         }
     }
 
-    private function addSomeRoadmapItems()
-    {
-        $numberOfItems = rand(5, 10);
-
-        for ($i = 0; $i < $numberOfItems; $i++) {
-            // get a random user from database
-            $user = User::inRandomOrder()->first();
-
-            $item = $user->roadmapItems()->create([
-                'title' => 'Roadmap Item '.$i,
-                'slug' => 'roadmap-item-'.$i,
-                'type' => RoadmapItemType::FEATURE->value,
-                'description' => $this->loremIpsum,
-                'upvotes' => rand(1, 10),
-                'status' => RoadmapItemStatus::APPROVED->value,
-                'created_at' => now()->subDays(rand(1, 1000)),
-            ]);
-
-            $item->userUpvotes()->attach($user->id, [
-                'ip_address' => rand(0, 255).'.'.
-                    rand(0, 255).'.'.
-                    rand(0, 255).'.'.
-                    rand(0, 255),
-            ]);
-        }
-    }
 }

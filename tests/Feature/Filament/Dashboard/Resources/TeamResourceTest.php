@@ -13,7 +13,7 @@ class TeamResourceTest extends FeatureTest
     {
         config(['app.teams_enabled' => true]);
 
-        $tenant = $this->createTenant();
+        $tenant = $this->createSubscribedTenant();
         $user = $this->createUser($tenant, [
             TenancyPermissionConstants::PERMISSION_MANAGE_TEAM,
         ]);
@@ -29,7 +29,7 @@ class TeamResourceTest extends FeatureTest
     {
         config(['app.teams_enabled' => true]);
 
-        $tenant = $this->createTenant();
+        $tenant = $this->createSubscribedTenant();
         $user = $this->createUser($tenant);
 
         $this->actingAs($user);
@@ -42,7 +42,7 @@ class TeamResourceTest extends FeatureTest
     {
         config(['app.teams_enabled' => false]);
 
-        $tenant = $this->createTenant();
+        $tenant = $this->createSubscribedTenant();
         $user = $this->createUser($tenant);
 
         $this->actingAs($user);

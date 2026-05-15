@@ -34,7 +34,7 @@ class UserVerificationService
 
     public function phoneAlreadyExists(User $currentUser, string $phoneNumber): bool
     {
-        if (User::where('phone_number', $phoneNumber)->where('id', '!=', $currentUser->id)->exists()) {
+        if (User::where('phone', $phoneNumber)->where('id', '!=', $currentUser->id)->exists()) {
             return true;
         }
 
@@ -69,7 +69,7 @@ class UserVerificationService
             return false;
         }
 
-        $user->phone_number = $dto->phoneNumber;
+        $user->phone = $dto->phoneNumber;
         $user->phone_number_verified_at = now();
         $user->save();
 

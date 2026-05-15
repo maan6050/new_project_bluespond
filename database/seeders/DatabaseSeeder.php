@@ -20,6 +20,10 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             EmailProvidersSeeder::class,
             VerificationProvidersSeeder::class,
+            BusinessCategoriesSeeder::class,
+            BluespondPlansSeeder::class,
+            BluespondPlanLimitsSeeder::class,
+            BluespondCleanupSeeder::class,
         ]);
     }
 }

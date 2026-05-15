@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Constants\SubscriptionStatus;
+use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\Testing\TestingDatabaseSeeder;
@@ -45,6 +47,26 @@ class FeatureTest extends TestCase
     protected function createTenant()
     {
         return Tenant::factory()->create();
+    }
+
+    /**
+     * Create a tenant that has an active subscription.
+     *
+     * The dashboard panel is gated by the EnsureUserHasActiveSubscription
+     * middleware, so any test that loads a dashboard page over HTTP needs the
+     * tenant to be subscribed — otherwise the request is redirected (302)
+     * before reaching the page.
+     */
+    protected function createSubscribedTenant()
+    {
+        $tenant = $this->createTenant();
+
+        Subscription::factory()->create([
+            'tenant_id' => $tenant->id,
+            'status' => SubscriptionStatus::ACTIVE->value,
+        ]);
+
+        return $tenant;
     }
 
     protected function createAdminUser()

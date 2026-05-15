@@ -34,9 +34,10 @@
                         </span>
                     @enderror
 
-                    <x-button-link.primary class="inline-block w-full! my-2" elementType="button" type="submit">
+                    <button type="submit"
+                            class="my-2 inline-flex w-full items-center justify-center rounded-lg bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         {{ __('Reset Password') }}
-                    </x-button-link.primary>
+                    </button>
 
                 </form>
             </div>

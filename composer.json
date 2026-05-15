@@ -25,6 +25,7 @@
         "laravel/ui": "^4.2",
         "livewire/livewire": "^4.0",
         "mpociot/versionable": "^4.4",
+        "predis/predis": "^3.4",
         "propaganistas/laravel-phone": "^6.0",
         "resend/resend-php": "^0.12.0",
         "saasykit/filament-country-field": "^1.0",
