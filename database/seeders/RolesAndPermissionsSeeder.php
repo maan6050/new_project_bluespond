@@ -103,9 +103,17 @@ class RolesAndPermissionsSeeder extends Seeder
         $this->multiTenancyRolesAndPermissions();
     }
 
-    private function multiTenancyRolesAndPermissions()
+    /**
+     * Define Bluespond's per-business tenant roles — Owner, Manager, Staff —
+     * and the permissions each one carries. Idempotent, so it is safe to call
+     * from both this seeder and the role-alignment migration.
+     */
+    public function multiTenancyRolesAndPermissions(): void
     {
-        $permissions = [
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Billing, transactions and role administration — the Owner's domain.
+        $billingPermissions = [
             TenancyPermissionConstants::PERMISSION_CREATE_SUBSCRIPTIONS,
             TenancyPermissionConstants::PERMISSION_UPDATE_SUBSCRIPTIONS,
             TenancyPermissionConstants::PERMISSION_DELETE_SUBSCRIPTIONS,
@@ -115,36 +123,55 @@ class RolesAndPermissionsSeeder extends Seeder
             TenancyPermissionConstants::PERMISSION_DELETE_ORDERS,
             TenancyPermissionConstants::PERMISSION_VIEW_ORDERS,
             TenancyPermissionConstants::PERMISSION_VIEW_TRANSACTIONS,
-            TenancyPermissionConstants::PERMISSION_INVITE_MEMBERS,
-            TenancyPermissionConstants::PERMISSION_MANAGE_TEAM,
-            TenancyPermissionConstants::PERMISSION_UPDATE_TENANT_SETTINGS,
             TenancyPermissionConstants::PERMISSION_VIEW_ROLES,
             TenancyPermissionConstants::PERMISSION_CREATE_ROLES,
             TenancyPermissionConstants::PERMISSION_UPDATE_ROLES,
             TenancyPermissionConstants::PERMISSION_DELETE_ROLES,
         ];
 
-        $tenancyPermissions = [];
+        // Running the business day-to-day — shared by Owner and Manager.
+        $operationsPermissions = [
+            TenancyPermissionConstants::PERMISSION_MANAGE_SERVICES,
+            TenancyPermissionConstants::PERMISSION_MANAGE_STAFF,
+            TenancyPermissionConstants::PERMISSION_MANAGE_CAMPAIGNS,
+            TenancyPermissionConstants::PERMISSION_VIEW_ANALYTICS,
+            TenancyPermissionConstants::PERMISSION_INVITE_MEMBERS,
+            TenancyPermissionConstants::PERMISSION_MANAGE_TEAM,
+            TenancyPermissionConstants::PERMISSION_UPDATE_TENANT_SETTINGS,
+        ];
 
-        foreach ($permissions as $permission) {
-            $tenancyPermissions[] = Permission::findOrCreate($permission);
+        // Front-line work — every tenant role can do this, including Staff.
+        $frontlinePermissions = [
+            TenancyPermissionConstants::PERMISSION_MANAGE_BOOKINGS,
+            TenancyPermissionConstants::PERMISSION_MANAGE_CUSTOMERS,
+        ];
+
+        // Ensure every tenant permission exists before it is assigned.
+        foreach (array_merge($billingPermissions, $operationsPermissions, $frontlinePermissions) as $permission) {
+            Permission::findOrCreate($permission);
         }
 
-        $adminRole = Role::query()->firstOrCreate([
-            'name' => TenancyPermissionConstants::ROLE_ADMIN,
-            'is_tenant_role' => true,
-        ], [
-            'guard_name' => 'web',
-        ]);
-        $adminRole->givePermissionTo($tenancyPermissions);
+        // Owner: full control. Manager: operations + front-line. Staff: front-line only.
+        $rolePermissions = [
+            TenancyPermissionConstants::ROLE_OWNER => array_merge(
+                $billingPermissions,
+                $operationsPermissions,
+                $frontlinePermissions,
+            ),
+            TenancyPermissionConstants::ROLE_MANAGER => array_merge(
+                $operationsPermissions,
+                $frontlinePermissions,
+            ),
+            TenancyPermissionConstants::ROLE_STAFF => $frontlinePermissions,
+        ];
 
-        $userRole = Role::query()->firstOrCreate([
-            'name' => TenancyPermissionConstants::ROLE_USER,
-            'is_tenant_role' => true,
-        ], [
-            'guard_name' => 'web',
-        ]);
+        foreach ($rolePermissions as $roleName => $permissions) {
+            $role = Role::query()->firstOrCreate(
+                ['name' => $roleName, 'is_tenant_role' => true],
+                ['guard_name' => 'web'],
+            );
 
-        // assign any permissions that the user role should have here
+            $role->syncPermissions($permissions);
+        }
     }
 }

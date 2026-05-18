@@ -87,7 +87,7 @@ class UsersRelationManager extends RelationManager
                             ->{$isMultiple ? 'whereIn' : 'where'}($relationship->getQualifiedRelatedKeyName(), $data['recordId'])
                             ->{$isMultiple ? 'get' : 'first'}();
 
-                        $result = $tenantService->addUserToTenant($this->ownerRecord, $record, TenancyPermissionConstants::ROLE_USER);
+                        $result = $tenantService->addUserToTenant($this->ownerRecord, $record, TenancyPermissionConstants::ROLE_STAFF);
 
                         if ($result === false) {
                             Notification::make()

@@ -34,14 +34,14 @@ class CreateInvitationTest extends FeatureTest
         Livewire::test(CreateInvitation::class)
             ->fillForm([
                 'email' => 'email@email.com',
-                'role' => TenancyPermissionConstants::ROLE_ADMIN,
+                'role' => TenancyPermissionConstants::ROLE_OWNER,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas(Invitation::class, [
             'email' => 'email@email.com',
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
 
         Event::assertDispatched(UserInvitedToTenant::class);
@@ -64,7 +64,7 @@ class CreateInvitationTest extends FeatureTest
         Livewire::test(CreateInvitation::class)
             ->fillForm([
                 'email' => $user->email,
-                'role' => TenancyPermissionConstants::ROLE_ADMIN,
+                'role' => TenancyPermissionConstants::ROLE_OWNER,
             ])
             ->call('create')
             ->assertHasFormErrors(['email' => __('The user with email :email is already in the team.', ['email' => $user->email])]);
@@ -97,7 +97,7 @@ class CreateInvitationTest extends FeatureTest
         Livewire::test(CreateInvitation::class)
             ->fillForm([
                 'email' => $fakeEmail,
-                'role' => TenancyPermissionConstants::ROLE_ADMIN,
+                'role' => TenancyPermissionConstants::ROLE_OWNER,
             ])
             ->call('create')
             ->assertHasFormErrors(['email' => __('The email :email has already been invited.', ['email' => $fakeEmail])]);
@@ -122,22 +122,22 @@ class CreateInvitationTest extends FeatureTest
         Livewire::test(CreateInvitation::class)
             ->fillForm([
                 'email' => "email1@email.com, email2@email.com\nemail3@email.com",
-                'role' => TenancyPermissionConstants::ROLE_ADMIN,
+                'role' => TenancyPermissionConstants::ROLE_OWNER,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas(Invitation::class, [
             'email' => 'email1@email.com',
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
         $this->assertDatabaseHas(Invitation::class, [
             'email' => 'email2@email.com',
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
         $this->assertDatabaseHas(Invitation::class, [
             'email' => 'email3@email.com',
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
 
         Event::assertDispatched(UserInvitedToTenant::class, 3);
@@ -175,7 +175,7 @@ class CreateInvitationTest extends FeatureTest
         Livewire::test(CreateInvitation::class)
             ->fillForm([
                 'email' => 'email1@email.com, email2@email.com',
-                'role' => TenancyPermissionConstants::ROLE_ADMIN,
+                'role' => TenancyPermissionConstants::ROLE_OWNER,
             ])
             ->call('create')
             ->assertHasFormErrors(['email' => __('You have reached the maximum number of users allowed for your subscription.')]);

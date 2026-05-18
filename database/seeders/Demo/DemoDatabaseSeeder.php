@@ -145,7 +145,7 @@ class DemoDatabaseSeeder extends Seeder
             ]);
             $tenant->users()->attach($user);
 
-            $this->tenantPermissionManager->assignTenantUserRole($tenant, $user, TenancyPermissionConstants::ROLE_ADMIN);
+            $this->tenantPermissionManager->assignTenantUserRole($tenant, $user, TenancyPermissionConstants::TENANT_CREATOR_ROLE);
 
             $order = $user->orders()->create([
                 'uuid' => Str::uuid(),
@@ -269,7 +269,7 @@ class DemoDatabaseSeeder extends Seeder
             ]);
             $tenant->users()->attach($user);
 
-            $this->tenantPermissionManager->assignTenantUserRole($tenant, $user, TenancyPermissionConstants::ROLE_ADMIN);
+            $this->tenantPermissionManager->assignTenantUserRole($tenant, $user, TenancyPermissionConstants::TENANT_CREATOR_ROLE);
 
             $status = rand(0, 1) === 1 ? SubscriptionStatus::ACTIVE : SubscriptionStatus::CANCELED;
 
@@ -367,5 +367,4 @@ class DemoDatabaseSeeder extends Seeder
             $user->save();
         }
     }
-
 }

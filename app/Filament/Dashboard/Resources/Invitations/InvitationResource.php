@@ -94,7 +94,7 @@ class InvitationResource extends Resource
                     ->options(function (TenantPermissionService $tenantPermissionService) {
                         return $tenantPermissionService->getAllAvailableTenantRolesForDisplay(Filament::getTenant());
                     })
-                    ->default(TenancyPermissionConstants::ROLE_USER)
+                    ->default(TenancyPermissionConstants::ROLE_STAFF)
                     ->label(__('Role'))
                     ->helperText(__('Choose the role for this user.')),
                 Select::make('team_id')

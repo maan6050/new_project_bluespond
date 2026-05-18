@@ -62,7 +62,7 @@ class TenantServiceTest extends FeatureTest
             'tenant_id' => $tenant->id,
             'user_id' => $inviter->id,
             'email' => $invited->email,
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
 
         $paymentProvider->shouldReceive('updateSubscriptionQuantity')
@@ -95,7 +95,7 @@ class TenantServiceTest extends FeatureTest
         $this->assertEquals(2, $tenantUsers->count());
 
         $userRoles = $permissionService->getTenantUserRoles($tenant, $invited);
-        $this->assertContains(TenancyPermissionConstants::ROLE_ADMIN, $userRoles);
+        $this->assertContains(TenancyPermissionConstants::ROLE_OWNER, $userRoles);
 
         // make sure that the UserJoinedTenant event was dispatched
         Event::assertDispatched(UserJoinedTenant::class);
@@ -141,7 +141,7 @@ class TenantServiceTest extends FeatureTest
             'user_id' => $inviter->id,
             'email' => $invited->email,
             'team_id' => $team->id,
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
 
         $paymentProvider->shouldReceive('updateSubscriptionQuantity')
@@ -171,7 +171,7 @@ class TenantServiceTest extends FeatureTest
         $this->assertEquals(2, $tenantUsers->count());
 
         $userRoles = $permissionService->getTenantUserRoles($tenant, $invited);
-        $this->assertContains(TenancyPermissionConstants::ROLE_ADMIN, $userRoles);
+        $this->assertContains(TenancyPermissionConstants::ROLE_OWNER, $userRoles);
 
         Event::assertDispatched(UserJoinedTenant::class);
         Event::assertDispatched(UserJoinedTeam::class);
@@ -211,7 +211,7 @@ class TenantServiceTest extends FeatureTest
             'tenant_id' => $tenant->id,
             'user_id' => $inviter->id,
             'email' => $invited->email,
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
 
         $paymentProvider->shouldNotReceive('updateSubscriptionQuantity');
@@ -241,7 +241,7 @@ class TenantServiceTest extends FeatureTest
         $this->assertEquals(2, $tenantUsers->count());
 
         $userRoles = $permissionService->getTenantUserRoles($tenant, $invited);
-        $this->assertContains(TenancyPermissionConstants::ROLE_ADMIN, $userRoles);
+        $this->assertContains(TenancyPermissionConstants::ROLE_OWNER, $userRoles);
 
         // make sure that the UserJoinedTenant event was dispatched
         Event::assertDispatched(UserJoinedTenant::class);
@@ -282,7 +282,7 @@ class TenantServiceTest extends FeatureTest
             'tenant_id' => $tenant->id,
             'user_id' => $inviter->id,
             'email' => $invited->email,
-            'role' => TenancyPermissionConstants::ROLE_ADMIN,
+            'role' => TenancyPermissionConstants::ROLE_OWNER,
         ]);
 
         $paymentProvider->shouldNotReceive('updateSubscriptionQuantity');
@@ -362,7 +362,7 @@ class TenantServiceTest extends FeatureTest
 
         Event::fake();
 
-        $result = $tenantService->addUserToTenant($tenant, $user, TenancyPermissionConstants::ROLE_ADMIN);
+        $result = $tenantService->addUserToTenant($tenant, $user, TenancyPermissionConstants::ROLE_OWNER);
 
         $this->assertTrue($result);
 
@@ -370,7 +370,7 @@ class TenantServiceTest extends FeatureTest
         $this->assertEquals(1, $tenantUsers->count());
 
         $userRoles = $permissionService->getTenantUserRoles($tenant, $user);
-        $this->assertContains(TenancyPermissionConstants::ROLE_ADMIN, $userRoles);
+        $this->assertContains(TenancyPermissionConstants::ROLE_OWNER, $userRoles);
 
         // make sure that the UserJoinedTenant event was dispatched
         Event::assertDispatched(UserJoinedTenant::class);
