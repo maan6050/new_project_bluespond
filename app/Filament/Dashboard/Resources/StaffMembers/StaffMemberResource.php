@@ -5,6 +5,8 @@ namespace App\Filament\Dashboard\Resources\StaffMembers;
 use App\Filament\Dashboard\Resources\StaffMembers\Pages\CreateStaffMember;
 use App\Filament\Dashboard\Resources\StaffMembers\Pages\EditStaffMember;
 use App\Filament\Dashboard\Resources\StaffMembers\Pages\ListStaffMembers;
+use App\Filament\Dashboard\Resources\StaffMembers\RelationManagers\BlockedTimesRelationManager;
+use App\Filament\Dashboard\Resources\StaffMembers\RelationManagers\SchedulesRelationManager;
 use App\Filament\Dashboard\Resources\StaffMembers\RelationManagers\ServicesRelationManager;
 use App\Filament\Dashboard\Resources\StaffMembers\Schemas\StaffMemberForm;
 use App\Filament\Dashboard\Resources\StaffMembers\Tables\StaffMembersTable;
@@ -49,6 +51,8 @@ class StaffMemberResource extends Resource
     public static function getRelations(): array
     {
         return [
+            SchedulesRelationManager::class,
+            BlockedTimesRelationManager::class,
             ServicesRelationManager::class,
         ];
     }
