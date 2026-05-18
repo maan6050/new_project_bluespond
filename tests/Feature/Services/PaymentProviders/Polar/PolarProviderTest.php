@@ -438,10 +438,14 @@ class PolarProviderTest extends FeatureTest
         $this->assertArrayNotHasKey('allow_trial', $capturedParams);
     }
 
-    private function invokeFindOrCreate(PolarProvider $provider, Discount $discount, PaymentProvider $paymentProvider): string
-    {
+    private function invokeFindOrCreate(
+        PolarProvider $provider,
+        Discount $discount,
+        PaymentProvider $paymentProvider,
+        string $currency = 'USD',
+    ): string {
         $method = new ReflectionMethod($provider, 'findOrCreatePolarDiscount');
 
-        return $method->invoke($provider, $discount, $paymentProvider);
+        return $method->invoke($provider, $discount, $paymentProvider, $currency);
     }
 }
