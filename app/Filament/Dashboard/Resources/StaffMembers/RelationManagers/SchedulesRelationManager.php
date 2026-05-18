@@ -7,7 +7,6 @@ use App\Models\StaffSchedule;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
-use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
@@ -99,7 +98,7 @@ class SchedulesRelationManager extends RelationManager
                     ->modalHeading(fn (StaffSchedule $record): string => __('Edit :day', [
                         'day' => DayOfWeek::from($record->day_of_week)->label(),
                     ]))
-                    ->successNotification(Notification::make()->success()->title(__('Schedule updated'))),
+                    ->successNotificationTitle(__('Schedule updated')),
             ])
             ->defaultSort('day_of_week')
             ->paginated(false);
